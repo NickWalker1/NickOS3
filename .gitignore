@@ -1,0 +1,6 @@
+*.bin
+*.o
+.vscode/
+src/os-image
+src/graveyard/
+cross/
