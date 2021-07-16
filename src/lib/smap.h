@@ -8,6 +8,8 @@ typedef struct MemoryMapEntry{
 }__attribute__((packed)) MemoryMapEntry;
 
 extern uint8_t MemoryRegionCount;
+int UsableMemoryRegionCount;
 
 void printMemoryMap(MemoryMapEntry* memoryMap);
 void printMemoryRegions(uint8_t MRC);
+MemoryMapEntry** getUsableMemoryRegions(uint8_t MRC);

@@ -3,6 +3,7 @@
 #include "int.h"
 
 char str[128];
+MemoryMapEntry* usableMemoryRegions[10];
 
 void printMemoryRegions(uint8_t MRC){
     uint8_t i=0;
@@ -25,13 +26,13 @@ void printMemoryMap(MemoryMapEntry* memoryMap){
 MemoryMapEntry** getUsableMemoryRegions(uint8_t MRC){
     uint8_t i=0;
     MemoryMapEntry* mMap = (MemoryMapEntry*) 0x5000;
-    MemoryMapEntry* usableRegions[MRC];
     int count=0;
     for(;i<MRC;i++){
         if(mMap->Type!=1) continue;
-        usableRegions[count++]=mMap;
+        usableMemoryRegions[count++]=mMap;
         mMap++;
     }
 
-    return usableRegions;
+    UsableMemoryRegionCount=count;
+    return usableMemoryRegions;
 }

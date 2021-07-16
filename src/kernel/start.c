@@ -5,6 +5,7 @@
 
 extern uint8_t MemoryRegionCount;
 
+
 void main(){
     //temporary fix for some static memory to store strings in temporarily
     char str[128];
@@ -15,6 +16,10 @@ void main(){
     println("Memory Region Count:");
     print(itoa(MemoryRegionCount,str, BASE_DEC));
 
-    printMemoryRegions(MemoryRegionCount);
+    //printMemoryRegions(MemoryRegionCount);
+    MemoryMapEntry** usableMemoryRegions = getUsableMemoryRegions(MemoryRegionCount);
+    println("Usable Memory Region Count:");
+    print(itoa(UsableMemoryRegionCount,str,BASE_DEC));
+
 }
 
