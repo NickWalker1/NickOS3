@@ -12,18 +12,19 @@ run: all
 os-image: boot/mbr.bin kernel.bin
 	cat $^ > os-image
 
-kernel.bin: boot/bootstrap.o ${OBJ}
+kernel.bin: boot/bootstrap.o ${OBJ} kernel/interrupt.o
 	i386-elf-ld -T "link.ld"
 
 
 #generic rule for compiling C code into obj file
 #for simplicity all C files depend on all the headers
 %.o : %.c ${HEADERS}
-	i386-elf-gcc -m32 -Ttext 0x8000 -c $< -o $@
+	i386-elf-gcc -m32 -Ttext 0x10000 -c $< -o $@
 
 #Assemble the bootstrap.o
 %.o : %.asm 
 	nasm $< -f elf32 -I './boot/' -o $@
+
 
 #Assemble the boot asm files
 %.bin : %.asm

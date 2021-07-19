@@ -1,7 +1,7 @@
 #include "../lib/screen.h"
-//#include "../lib/typedefs.h"
 #include "../lib/int.h"
 #include "../lib/smap.h"
+#include "idt.h"
 
 extern uint8_t MemoryRegionCount;
 
@@ -20,6 +20,8 @@ void main(){
     MemoryMapEntry** usableMemoryRegions = getUsableMemoryRegions(MemoryRegionCount);
     println("Usable Memory Region Count:");
     print(itoa(UsableMemoryRegionCount,str,BASE_DEC));
+
+    idt_init();
 
 }
 

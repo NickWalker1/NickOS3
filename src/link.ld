@@ -11,6 +11,8 @@ INPUT
     lib/int.o
     lib/smap.o
     kernel/start.o
+    kernel/idt.o
+    kernel/interrupt.o
 )
 
 OUTPUT
@@ -39,7 +41,6 @@ SECTIONS
 
     .bss : ALIGN(0x1000)
     {
-        *(COMMON)
         *(.bss)
     }
 }

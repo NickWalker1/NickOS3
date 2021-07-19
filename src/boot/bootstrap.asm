@@ -16,7 +16,6 @@
 [extern main]
 ; Where we arrive after switching to protected mode
 
-;%include "detectMemory.asm"
 
 BEGIN_PM:
     mov ebx, MSG_PROT_MODE
