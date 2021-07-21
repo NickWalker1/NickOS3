@@ -11,3 +11,8 @@ bootloader_entry    0x8000 //Kernel also directly after this
 
 vga_text_base       0x000b8000
 kernel_stacks       0x00090000
+
+TODO:
+* fix issue with pic interrupt causing triple fault (currently just disabled pic)
+* paging
+* process
