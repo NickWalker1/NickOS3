@@ -26,7 +26,7 @@ void idt_init(){
     idtr.limit=(uint16_t)sizeof(idt_entry) * IDT_MAX_DESCRIPTORS -1;
 
     unsigned char vector;
-    for(vector=0; vector<32; vector++){
+    for(vector=0; vector<33; vector++){
         idt_set_descriptor(vector,isr_stub_table[vector],0x8E);
     }
     /*
