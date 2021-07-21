@@ -1,17 +1,22 @@
 %macro isr_err_stub 1
 isr_stub_%+%1:
-    call exception_handler
+    cli
+    push byte %1
+    call default_exception_handler
     iret 
 %endmacro
 
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
-    call exception_handler
+    cli
+    push 0
+    push byte %1
+    call default_interrupt_handler
     iret
 %endmacro
 
+;extern exception_handler
 
-extern exception_handler
 isr_no_err_stub 0
 isr_no_err_stub 1
 isr_no_err_stub 2
@@ -44,6 +49,15 @@ isr_no_err_stub 28
 isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
+
+global default_exception_handler
+global default_interrupt_handler
+
+default_exception_handler:
+        iret
+
+default_interrupt_handler:
+        iret
 
 global isr_stub_table
 

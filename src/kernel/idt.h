@@ -13,7 +13,6 @@ typedef struct{
 
 __attribute__((aligned(0x10)))
 static idt_entry idt[256];
-static bool vectors[IDT_MAX_DESCRIPTORS];
 
 typedef struct {
     uint16_t limit;

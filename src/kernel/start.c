@@ -22,6 +22,7 @@ void main(){
     print(itoa(UsableMemoryRegionCount,str,BASE_DEC));
 
     idt_init();
-
+    
+    println("gay");
 }
 
