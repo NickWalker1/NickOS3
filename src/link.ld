@@ -11,8 +11,8 @@ INPUT
     lib/int.o
     lib/smap.o
     kernel/start.o
-    kernel/idt.o
-    kernel/interrupt.o
+    idt/idt.o
+    idt/interrupt.o
 )
 
 OUTPUT

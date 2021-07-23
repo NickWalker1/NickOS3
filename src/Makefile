@@ -1,5 +1,5 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c lib/*.c)
-HEADERS   = $(wildcard kernel/*.h drivers/*.h lib/*.h)
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c lib/*.c idt/*.c)
+HEADERS   = $(wildcard kernel/*.h drivers/*.h lib/*.h idt/*.h)
 
 OBJ=${C_SOURCES:.c=.o}
 
@@ -12,7 +12,7 @@ run: all
 os-image: boot/mbr.bin kernel.bin
 	cat $^ > os-image
 
-kernel.bin: boot/bootstrap.o ${OBJ} kernel/interrupt.o
+kernel.bin: boot/bootstrap.o ${OBJ} idt/interrupt.o
 	i386-elf-ld -T "link.ld"
 
 

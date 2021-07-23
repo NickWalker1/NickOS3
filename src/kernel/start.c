@@ -1,7 +1,7 @@
 #include "../lib/screen.h"
 #include "../lib/int.h"
 #include "../lib/smap.h"
-#include "idt.h"
+#include "../idt/idt.h"
 
 extern uint8_t MemoryRegionCount;
 
@@ -23,6 +23,8 @@ void main(){
 
     idt_init();
     
-    println("gay");
+    println("Throwing random exception:");
+    __asm__ volatile("int $0x3");
+    println("Ok.");
 }
 
