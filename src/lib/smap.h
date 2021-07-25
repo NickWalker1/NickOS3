@@ -2,7 +2,7 @@
 #include "typedefs.h"
 
 typedef struct MemoryMapEntry{
-    uint64_t Base;//these may not work?
+    uint64_t Base;
     uint64_t Length;
     uint32_t Type;
     uint32_t ACPI;

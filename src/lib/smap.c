@@ -28,9 +28,9 @@ MemoryMapEntry** getUsableMemoryRegions(uint8_t MRC){
     MemoryMapEntry* mMap = (MemoryMapEntry*) 0x5000;
     int count=0;
     for(;i<MRC;i++){
+        mMap++;
         if(mMap->Type!=1) continue;
         usableMemoryRegions[count++]=mMap;
-        mMap++;
     }
 
     UsableMemoryRegionCount=count;

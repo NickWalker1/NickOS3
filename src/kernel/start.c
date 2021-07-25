@@ -11,20 +11,23 @@ void main(){
     char str[128];
 
     //clear_screen();
-    println("Kernel Mode");
+    println("Kernel Mode.");
 
     println("Memory Region Count:");
     print(itoa(MemoryRegionCount,str, BASE_DEC));
 
-    //printMemoryRegions(MemoryRegionCount);
+    //Detect usable Memory Regions
     MemoryMapEntry** usableMemoryRegions = getUsableMemoryRegions(MemoryRegionCount);
     println("Usable Memory Region Count:");
     print(itoa(UsableMemoryRegionCount,str,BASE_DEC));
 
-    idt_init();
+    //Test usable memory space
+    println("First usable address:");
+    print(itoa(usableMemoryRegions[0]->Base,str,BASE_HEX));
     
-    println("Throwing random exception:");
-    __asm__ volatile("int $0x3");
-    println("Ok.");
+    //Initialise IDT
+    idt_init();
+    println("Initialised IDT.");
+
 }
 

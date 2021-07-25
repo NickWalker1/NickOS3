@@ -138,10 +138,6 @@ exception_definition exceptions[] =
             .description = "Reserved",
         }};
 
-void exception_handler(){
-    __asm__ volatile("cli; hlt"); //completely hangs the computer
-    while(1); //needed to just make the compiler shut up
-}
 
 void idt_set_descriptor(uint8_t vector, uint32_t (*handler)(interrupt_state *state), bool user_interrupt){
     idt_entry* descriptor = &idt[vector];

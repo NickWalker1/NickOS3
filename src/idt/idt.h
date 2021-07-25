@@ -32,8 +32,6 @@ typedef struct exception_definition
 
 static idtr_t idtr;
 
-__attribute__((noreturn))
-void exception_handler(void);
 void idt_set_descriptor(uint8_t vector, uint32_t (*handler)(interrupt_state *state), bool user_interrupt);
 void idt_init(void);
 
