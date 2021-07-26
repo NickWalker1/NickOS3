@@ -31,6 +31,8 @@ enableA20:
 	ret
 
 [bits 32]
+
+
 initProtMode:
     mov ax, DATA_SEQ        ; Now in PM< old segments are meaningless
     mov ds, ax              ; use segment registers to point to the data selector
@@ -39,8 +41,9 @@ initProtMode:
     mov fs, ax
     mov gs, ax
 
-    mov ebp, 0x90000        ; Update the stack pointer so it is right
-    mov esp,ebp             ; at the top of the free space
+    ;pre paging code
+    ;mov ebp, 0x90000        ; Update the stack pointer so it is right
+    ;mov esp,ebp             ; at the top of the free space
 
 
     jmp BEGIN_PM            ; call some well-known label

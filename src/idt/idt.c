@@ -1,11 +1,9 @@
 #include "idt.h"
 #include "../lib/screen.h"
 #include "cpu_state.h"
+#include "../lib/int.h"
 
-extern void* isr_stub_table[];
-extern void default_exception_handler();
-extern void default_interrupt_handler();
-extern void setupStub();
+char str[128];
 
 exception_definition exceptions[] =
     {
@@ -218,11 +216,66 @@ void idt_init(){
 
 }
 
+void page_fault_handler(exception_state *state){
+    //TODO make swap pages
+
+}
 
 void idt_global_int_handler(exception_state *state){
     println("HANDLED INTERRUPT");
 }
 
 void idt_global_exc_handler(exception_state *state){
-    println("HANDLED EXCEPTION");
+    println("HANDLED EXCEPTION: ");
+    //if(state->interrupt_number==13){
+        state_dump(state);
+        __asm__ volatile("cli;hlt");
+        while(1);
+    //}
+    uint8_t code=state->error_code&0b1111111111111110;
+    print(itoa(state->interrupt_number,str,BASE_DEC));
+    print(" : ");
+    print(exceptions[state->interrupt_number].description);
+    print(" : ");
+    print(itoa(code,str,BASE_BIN));
+}
+
+void state_dump(exception_state *state){
+    char str[128];
+    println("---CORE DUMP---");
+    println("IDTR:");
+    print(itoa(state->idtr,str,BASE_HEX));
+    println("GDTR:");
+    print(itoa(state->gdtr,str,BASE_HEX));
+    println("GS:");
+    print(itoa(state->gs,str,BASE_HEX));
+    println("FS:");
+    print(itoa(state->fs,str,BASE_HEX));
+    println("ES:");
+    print(itoa(state->es,str,BASE_HEX));
+    println("CR4:");
+    print(itoa(state->cr4,str,BASE_BIN));
+    println("CR3:");
+    print(itoa(state->cr3,str,BASE_BIN));
+    println("CR2:");
+    print(itoa(state->cr2,str,BASE_BIN));
+    println("CR0:");
+    print(itoa(state->cr0,str,BASE_BIN));
+    println("DS:");
+    print(itoa(state->ds,str,BASE_HEX));
+    println("INT_NUM:");
+    print(itoa(state->interrupt_number,str,BASE_HEX));
+    println("ERROR_CODE:");
+    print(itoa(state->error_code,str,BASE_HEX));
+    println("EIP:");
+    print(itoa(state->eip,str,BASE_HEX));
+    println("CS:");
+    print(itoa(state->cs,str,BASE_HEX));
+    println("EFLAGS:");
+    print(itoa(state->eflags,str,BASE_HEX));
+    println("ESP:");
+    print(itoa(state->esp,str,BASE_HEX));
+    println("SS:");
+    print(itoa(state->ss,str,BASE_HEX));
+
 }

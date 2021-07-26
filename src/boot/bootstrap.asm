@@ -16,16 +16,41 @@
 [extern main]
 ; Where we arrive after switching to protected mode
 
+%include "paging.asm"
+
 
 BEGIN_PM:
+
     mov ebx, MSG_PROT_MODE
     call printString32
 
+    call clear_page_directory
+    call clear_page_tables
+
+    call create_page_directory
+    call create_identity_page_table
+    call create_kernel_page_table
+    call enable_paging
+
+    ; Set new stack with virtual address
+    mov eax, 0xC1100000
+    mov esp, eax
+
+    ; Init FPU
+    finit
+    
+
+    ; Jump to main kernel entry point in C
     jmp main
 
+    ; Main should never return, but if it does: spin
+
+    jmp $
 
 
-MSG_PROT_MODE   db "Successfully in 32-bit protected mode",0
+
+MSG_PROT_MODE   db "Successfully in 32-bit protected mode with paging",0
 MSG_BOOT db "Successfully loaded from floppy disk",0
+MSG_PAGING db "Now using Paging",0
 
 times 2048-($-$$) db 0

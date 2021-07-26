@@ -1,5 +1,8 @@
 OUTPUT_FORMAT(binary)
 
+KERNEL_PHYSICAL_ADDRESS = 0x00008000; 
+KERNEL_VIRTUAL_ADDRESS  = 0xC0000000;
+
 ENTRY(main)
 
 INPUT
@@ -10,9 +13,13 @@ INPUT
     lib/memory.o
     lib/int.o
     lib/smap.o
+    lib/string.o
     kernel/start.o
     idt/idt.o
     idt/interrupt.o
+    gdt/gdt.o
+    paging/paging.o
+
 )
 
 OUTPUT
@@ -22,25 +29,36 @@ OUTPUT
 
 SECTIONS
 {
-    . = 0x8000;
+    . = KERNEL_PHYSICAL_ADDRESS;
+    .boot :
+    {
+        boot/bootstrap.o
+    }
 
-    .text : ALIGN(0x1000)
+    . +=KERNEL_VIRTUAL_ADDRESS;
+
+	.text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VIRTUAL_ADDRESS)
     {
         *(.text)
     }
 
-    .data : ALIGN(0x1000)
-    {
-        *(.data)
-    }
-
-    .rodata : ALIGN(0x1000)
+	.rodata ALIGN(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_ADDRESS)
     {
         *(.rodata)
     }
 
-    .bss : ALIGN(0x1000)
+	.data ALIGN(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL_ADDRESS)
+    {
+        *(.data)
+    }
+
+
+    BSS_SECTION_START = .;
+
+	.bss ALIGN(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_ADDRESS)
     {
         *(.bss)
     }
+
+    BSS_SECTION_END = .;
 }

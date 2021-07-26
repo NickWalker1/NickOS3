@@ -34,7 +34,10 @@ static idtr_t idtr;
 
 void idt_set_descriptor(uint8_t vector, uint32_t (*handler)(interrupt_state *state), bool user_interrupt);
 void idt_init(void);
-
+void page_fault_handler(exception_state *state);
+void idt_global_int_handler(exception_state *state);
+void idt_global_exc_handler(exception_state *state);
+void state_dump(exception_state *state);
 
 //Exceptions
 extern uint32_t idt_exc0();
