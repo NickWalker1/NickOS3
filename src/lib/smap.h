@@ -13,4 +13,5 @@ int UsableMemoryRegionCount;
 
 void printMemoryMap(MemoryMapEntry* memoryMap);
 void printMemoryRegions(uint8_t MRC);
+void setupAvailablePages(uint8_t MRC, MemoryMapEntry** mRegions);
 MemoryMapEntry** getUsableMemoryRegions(uint8_t MRC);

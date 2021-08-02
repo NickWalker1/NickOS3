@@ -19,6 +19,7 @@ INPUT
     idt/interrupt.o
     gdt/gdt.o
     paging/paging.o
+    paging/pagedir.o
 
 )
 

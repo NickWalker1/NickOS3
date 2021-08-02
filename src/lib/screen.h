@@ -1,4 +1,7 @@
 #pragma once
+
+#include "int.h"
+
 #define VIDEO_ADDRESS 0xb8000
 #define MAX_ROWS 25
 #define MAX_COLS 80
@@ -14,6 +17,7 @@ struct pos{
     int row;
     int col;
 };
+
 
 int get_screen_offset(int col, int row);
 int get_cursor();

@@ -28,19 +28,23 @@ void main(){
     println("Usable Memory Region Count:");
     print(itoa(UsableMemoryRegionCount,str,BASE_DEC));
 
-    gdt_init();
-    paging_init();
-    println("Identity Map removed.");
-
-    //Test usable memory space
-    println("First usable address:");
-    print(itoa(usableMemoryRegions[0]->Base,str,BASE_HEX));
+    setupAvailablePages(UsableMemoryRegionCount, usableMemoryRegions);
+    println("Number of dynamic pages available:");
+    print(itoa(pagecount,str,BASE_DEC));
     
+    gdt_init();
+    
+    paging_init((void*) usableMemoryRegions[0]->Base);
+    println("Init identity map removed.");
+
     //Initialise IDT
-
     //idt_init();
-    //println("Initialised IDT.");
+    //println("Initialised IDT. NOTTTT");
 
+    println("First free page addr:");
+    print(itoa((int) get_next_free_physical_page(),str,BASE_HEX));
+    
+    //Hold
     while(1);
 
 }

@@ -3,7 +3,7 @@
 #include "int.h"
 
 char str[128];
-MemoryMapEntry* usableMemoryRegions[10];
+static MemoryMapEntry* usableMemoryRegions[10];
 
 void printMemoryRegions(uint8_t MRC){
     uint8_t i=0;
@@ -23,12 +23,16 @@ void printMemoryMap(MemoryMapEntry* memoryMap){
     println("ACPI:");       print(itoa(memoryMap->ACPI,str,BASE_HEX));
 }
 
+
+
 MemoryMapEntry** getUsableMemoryRegions(uint8_t MRC){
     uint8_t i=0;
-    MemoryMapEntry* mMap = (MemoryMapEntry*) 0x5000;
+    MemoryMapEntry* mMap = (MemoryMapEntry*) 0x5000; //static physical address where shit is stored
+    //still works as identity mapping still exists.
     int count=0;
+    mMap--;
     for(;i<MRC;i++){
-        mMap++;
+        mMap++;//skips first one also which is used for kernel shit
         if(mMap->Type!=1) continue;
         usableMemoryRegions[count++]=mMap;
     }
