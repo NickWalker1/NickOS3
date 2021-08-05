@@ -79,8 +79,15 @@ void palloc_init(){
 
 
 }
+
 /* Returns virtual address to base address of a new page of allocated memory */
+/*
 void* get_new_page(){
+    //TODODODODO
+    //BEFORE UNCOMMENTING
+    //FIX THE BIT SHIFTS LIKE INIT POOL HAS
+
+
     //TODO figure out if you're kernel or user
     //currently assume just kernel hence using Kptov
 
@@ -119,6 +126,7 @@ void* get_new_page(){
     }
 
 }
+*/
 
 void init_pool(pool* mempool, bool kernel){
     //find out how much space is required to store the pool info
@@ -137,17 +145,21 @@ void init_pool(pool* mempool, bool kernel){
         size_t vaddr  = Kptov(paddr);
         size_t pd_idx = pd_no(vaddr);
         size_t pt_idx = pt_no(vaddr);
+        if(i==0){
+            //update kernel pool pointer to point to start of this allocated section.
+            kernel_pool=(pool*) vaddr;    
+        }
 
         //check if there is a pde there, if not create one
         if(kernel_pd[pd_idx].present==0){
             ptaddr= get_next_free_physical_page();
-            kernel_pd[pd_idx].page_table_base_addr=ptaddr;
+            kernel_pd[pd_idx].page_table_base_addr=((uint32_t) ptaddr>>PGBITS);//Only want 20 most significant bits
             kernel_pd[pd_idx].present=1;
             kernel_pd[pd_idx].read_write=1;
             //TODO MEMSET THIS PAGE TO ALL 0
         }
-        page_table_entry* pt=(page_table_entry*) kernel_pd[pd_idx].page_table_base_addr;
-        pt[pt_idx].page_base_addr=(unsigned int) paddr;
+        page_table_entry* pt=(page_table_entry*) (kernel_pd[pd_idx].page_table_base_addr<<PGBITS);
+        pt[pt_idx].page_base_addr= ((uint32_t) paddr)>>PGBITS;//Only want 20 most significant bits
         pt[pt_idx].present=1;
         pt[pt_idx].read_write=0;
     }
