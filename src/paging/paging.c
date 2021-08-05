@@ -2,8 +2,7 @@
 #include "pte.h"
 #include "../lib/screen.h"
 
-page_table_entry *kernel_pd = (page_table_entry*)PAGE_DIRECTORY_BASE;
-page_table_entry *kernel_ptables= (page_table_entry*)PAGE_TABLES_BASE;
+page_directory_entry *kernel_pd = (page_directory_entry*)PAGE_DIRECTORY_BASE;
 
 
 
@@ -27,6 +26,7 @@ void* Kvtop(void* virt){
 void paging_init(void* dynamic_phys_base){
     clear_identity_pages();
 
+    kernel_mapping_init();
     palloc_init(dynamic_phys_base);
 
 }
@@ -68,11 +68,94 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
     }
 }
 
+void kernel_mapping_init(){
+    
+}
+
 void palloc_init(){
     //setup kernel pool
+    init_pool(kernel_pool,true);
+
+
+
+}
+/* Returns virtual address to base address of a new page of allocated memory */
+void* get_new_page(){
+    //TODO figure out if you're kernel or user
+    //currently assume just kernel hence using Kptov
+
+    if(true){//IF KERNEL
+        void* paddr;
+        void* vaddr;
+        size_t pd_idx, pt_idx;
+        page_table_entry* pt;
+
+        paddr = get_next_free_physical_page();
+        vaddr = Kptov(paddr);
+        pd_idx=pd_no(vaddr);
+        pt_idx=pt_no(vaddr);
+
+        //if the page table page does not exist, create one and fill out the entry
+        //in the PD.
+        if(kernel_pd[pd_idx].present==0){
+            void* pt_addr = get_next_free_physical_page();
+            kernel_pd[pd_idx].page_table_base_addr=pt_addr;
+            kernel_pd[pd_idx].present=1;
+            kernel_pd[pd_idx].read_write=1;
+        }
+
+        pt=(page_table_entry*) kernel_pd[pd_idx].page_table_base_addr;
+        pt[pt_idx].page_base_addr=paddr;
+        pt[pt_idx].present=1;
+        pt[pt_idx].read_write=1;
+
+        return vaddr;
+    }
+    else{
+        //TODO implement user shit
+        //find out how many pages already allocated to user then virtual address will be
+        //that number * 4096 :)
+        return 0;
+    }
 
 }
 
+void init_pool(pool* mempool, bool kernel){
+    //find out how much space is required to store the pool info
+    int numBytes= sizeof(pool);//TODO THIS IS WRONG
+    //do some maff to round up
+    if(numBytes%PGSIZE!=0){
+        numBytes=numBytes-(numBytes%PGSIZE)+PGSIZE;
+    }
+    int numPages=numBytes/PGSIZE;
+    println(itoa(numPages,str,BASE_DEC));
+    void* paddr;
+    void* ptaddr;
+
+    for(int i=0;i<numPages;i++){
+        paddr=get_next_free_physical_page();
+        size_t vaddr  = Kptov(paddr);
+        size_t pd_idx = pd_no(vaddr);
+        size_t pt_idx = pt_no(vaddr);
+
+        //check if there is a pde there, if not create one
+        if(kernel_pd[pd_idx].present==0){
+            ptaddr= get_next_free_physical_page();
+            kernel_pd[pd_idx].page_table_base_addr=ptaddr;
+            kernel_pd[pd_idx].present=1;
+            kernel_pd[pd_idx].read_write=1;
+            //TODO MEMSET THIS PAGE TO ALL 0
+        }
+        page_table_entry* pt=(page_table_entry*) kernel_pd[pd_idx].page_table_base_addr;
+        pt[pt_idx].page_base_addr=(unsigned int) paddr;
+        pt[pt_idx].present=1;
+        pt[pt_idx].read_write=0;
+    }
+
+    //TODO if doing the init_pd* thing then set cr3 to Kvtop(init_pd) but just check that it definitely just want's physical address not virtual.
+
+
+}
 /*
 void* palloc_get_multiple(size_t pg_count, uint8_t flags){
     pool* pool = flags & PUSER ? &
@@ -80,7 +163,7 @@ void* palloc_get_multiple(size_t pg_count, uint8_t flags){
 */
 
 /* Returns the physical address of the next free physical page and sets
- * it to used. Returns 0 if no page is available
+ * it to used and adds it's entry to the pd. Returns 0 if no page is available
  */
 void* get_next_free_physical_page(){
     //TODO update this to used linked list or something more intelligent
@@ -88,7 +171,17 @@ void* get_next_free_physical_page(){
     for(int i=0;i<MAX_PHYS_PAGES;i++){
         if(physical_page_entries[i].type==M_FREE){
             physical_page_entries[i].type=M_FILLED;
-            return physical_page_entries[i].phys_addr;
+            /*
+            REMOVE THIS SHIT ITS IN WRONG PLACE
+            if(kernel){
+                size_t paddr = physical_page_entries[i].phys_addr; 
+                size_t vaddr = Kptov(paddr));
+                size_t pd_idx= pd_no(vaddr);
+                size_t pt_idx= pt_no(vaddr);
+                kernel_pd[pd_idx]=pde_create(vaddr);
+            }
+            */
+            return physical_page_entries[i].phys_addr; 
         }
     }
     return 0;

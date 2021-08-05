@@ -19,5 +19,5 @@ page_tables         0xC1100000 (grows upwards)
 
 
 TODO:
-* paging
-* process
+* add default kernel pd then each process can be given a copy of this then add to it.
+* processes

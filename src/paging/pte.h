@@ -3,7 +3,7 @@
 
 
 #define PGBITS              12
-#define PGSIZE              1<<PGBITS
+#define PGSIZE              4096
 
 #define BITMASK(SHIFT, CNT) (((1ul << (CNT)) - 1) << (SHIFT)
 
@@ -73,3 +73,13 @@ static inline size_t pd_no (const void *va) {
 #define PTE_U 0x4               /* 1=user/kernel, 0=kernel only. */
 #define PTE_A 0x20              /* 1=accessed, 0=not acccessed. */
 #define PTE_D 0x40              /* 1=dirty, 0=not dirty (PTEs only). */
+
+/*
+static inline uint32_t pde_create (uint32_t *pt) {
+  return pt | PTE_U | PTE_P | PTE_W;
+}
+
+static inline uint32_t pte_create_kernel (void *page, bool writable) {
+  return page | PTE_P | (writable ? PTE_W : 0);
+}
+*/

@@ -31,6 +31,8 @@ void main(){
     setupAvailablePages(UsableMemoryRegionCount, usableMemoryRegions);
     println("Number of dynamic pages available:");
     print(itoa(pagecount,str,BASE_DEC));
+    println("Dynamic memory area physical start addr:");
+    print(itoa(usableMemoryRegions[1]->Base,str,BASE_HEX));
     
     gdt_init();
     
