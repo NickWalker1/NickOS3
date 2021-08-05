@@ -37,7 +37,7 @@ void main(){
     gdt_init();
     
     paging_init((void*) usableMemoryRegions[0]->Base);
-    println("Init identity map removed.");
+    println("Paging intialised");
 
     //Initialise IDT
     //idt_init();

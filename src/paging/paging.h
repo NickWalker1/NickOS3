@@ -64,11 +64,9 @@ typedef struct phys_page{
 }phys_page;
 
 typedef enum memory_type{
-    M_FREE=1,
-    M_RESERVED=2,
-    M_FILLED=3,
-    M_AVAILABLE=4,
-    M_NOT_AVAILABLE=5
+    M_FREE=1,/* Not allocated to anyone */
+    M_ALLOCATED=2, /* Allocated to someone */
+    M_RESERVED=3, /* Cannot be allocated */
 }memory_type;
 
 typedef struct virt_page virt_page;
@@ -76,6 +74,7 @@ typedef struct virt_page virt_page;
 struct virt_page
 {
     uint8_t type;
+    void* base_vaddr;
     virt_page* nextPage;
     virt_page* nextFreePage;
     virt_page* previousPage;
@@ -100,8 +99,9 @@ page_directory_entry *kernel_pd;
 void setupAvailablePages(uint8_t MRC, MemoryMapEntry** mRegions);
 void paging_init(void* dynamic_phys_base);
 void kernel_mapping_init();
-void init_pool(pool* pool, bool kernel);
+void init_pool(bool kernel);
 void palloc_init();
 void* get_next_free_physical_page();
+void map_page(void* paddr, void* vaddr, bool kernel);
 void clear_identity_pages();
 
