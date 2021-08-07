@@ -17,6 +17,8 @@ void main(){
     //clear_screen();
     println("Kernel Mode.");
 
+
+
     clear_bss();
     println("BSS cleared.");
 
