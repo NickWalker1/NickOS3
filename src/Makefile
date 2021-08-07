@@ -5,6 +5,11 @@ OBJ=${C_SOURCES:.c=.o}
 
 all: os-image
 
+#GCC=gcc
+GCC=i386-elf-gcc
+#LD=ld
+LD=i386-elf-gcc
+
 run: all
 	qemu-system-x86_64 -fda os-image
 
@@ -13,13 +18,13 @@ os-image: boot/mbr.bin kernel.bin
 	cat $^ > os-image
 
 kernel.bin: boot/bootstrap.o ${OBJ} idt/interrupt.o
-	i386-elf-ld -T "link.ld"
+	$(LD)  -T "link.ld"
 
 
 #generic rule for compiling C code into obj file
 #for simplicity all C files depend on all the headers
 %.o : %.c ${HEADERS}
-	i386-elf-gcc -m32 -c $< -o $@
+	$(GCC) -m32 -c $< -o $@
 
 #Assemble the bootstrap.o
 %.o : %.asm 
@@ -31,8 +36,7 @@ kernel.bin: boot/bootstrap.o ${OBJ} idt/interrupt.o
 	nasm $< -f bin -I './boot/' -o $@
 
 clean:
-	rm -f boot/*.bin boot/*.o
-	rm -f kernel/*.o kernel.bin
-	rm -f drivers/*.o
+	rm -f boot/*.bin kernel.bin
+	rm -f */*.o
 	rm -f os-image
 
