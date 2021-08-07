@@ -1,4 +1,5 @@
 #pragma once
+
 #include "../lib/typedefs.h"
 #include "../lib/smap.h"
 
@@ -24,7 +25,7 @@
 #define F_KERN 0x1 /* 1 for kernel, 0 for user */
 #define F_ZERO 0x2 /* 1 for set all bytes to 0, 0 don't bother */
 
-int pagecount;
+extern int pagecount;
 
 void* Kptov(void* phys);
 void* Kvtop(void* virt);
@@ -96,9 +97,9 @@ typedef struct pool
 
 } pool;
 
-page_directory_entry *kernel_pd;
-pool* kernel_pool;
-pool* user_pool;
+extern page_directory_entry *kernel_pd;
+extern pool* kernel_pool;
+extern pool* user_pool;
 //page_table_entry *kernel_ptables;
 
 void setupAvailablePages(uint8_t MRC, MemoryMapEntry** mRegions);
@@ -111,4 +112,3 @@ void* get_next_free_physical_page();
 void map_page(void* paddr, void* vaddr, uint8_t flags);
 void init_heap_page(uint8_t flags);
 void clear_identity_pages();
-

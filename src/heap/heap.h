@@ -15,7 +15,7 @@ struct MemorySegmentHeader{
 };
 
 
-MemorySegmentHeader* firstFreeSegment;
+extern MemorySegmentHeader* firstFreeSegment;
 
 void initialiseHeap(void* baseAddr, int length);
 void* malloc(size_t size);

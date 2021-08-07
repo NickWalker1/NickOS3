@@ -1,23 +1,10 @@
 #include "start.h"
-#include "../lib/screen.h"
-#include "../lib/int.h"
-#include "../lib/smap.h"
-#include "../lib/string.h"
-#include "../idt/idt.h"
-#include "../paging/paging.h"
-#include "../gdt/gdt.h"
-
-extern uint8_t MemoryRegionCount;
 
 
 void main(){
-    //temporary fix for some static memory to store strings in temporarily
-    char str[128];
 
     //clear_screen();
     println("Kernel Mode.");
-
-
 
     clear_bss();
     println("BSS cleared.");

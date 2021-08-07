@@ -1,5 +1,7 @@
 #include "heap.h"
 
+MemorySegmentHeader* firstFreeSegment;
+
 void initialiseHeap(void* baseAddr, int length){
     //currently length will just be PGSIZE
     //so some inefficiency possible if the very first request is

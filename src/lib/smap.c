@@ -2,8 +2,8 @@
 #include "screen.h"
 #include "int.h"
 
-char str[128];
 static MemoryMapEntry* usableMemoryRegions[10];
+int UsableMemoryRegionCount;
 
 void printMemoryRegions(uint8_t MRC){
     uint8_t i=0;

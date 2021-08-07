@@ -14,7 +14,7 @@
 #define REG_SCREEN_DATA 0x3D5
 
 
-char str[128];
+extern char str[128];
 
 struct pos{
     int row;

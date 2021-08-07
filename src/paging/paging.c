@@ -3,6 +3,13 @@
 #include "../lib/screen.h"
 #include "../heap/heap.h"
 
+
+page_directory_entry *kernel_pd;
+pool* kernel_pool;
+pool* user_pool;
+int pagecount;
+
+
 page_directory_entry *kernel_pd = (page_directory_entry*)PAGE_DIRECTORY_BASE;
 
 

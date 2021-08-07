@@ -3,6 +3,8 @@
 #include "memory.h"
 #include "int.h"
 
+char str[128];
+
 //Gets the screen offset for a given location
 int get_screen_offset(int col, int row){
     return (row*80+col)*2;

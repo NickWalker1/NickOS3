@@ -3,8 +3,6 @@
 #include "cpu_state.h"
 #include "../lib/int.h"
 
-char str[128];
-
 exception_definition exceptions[] =
     {
         {
