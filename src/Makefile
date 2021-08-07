@@ -4,18 +4,13 @@ HEADERS   = $(wildcard kernel/*.h drivers/*.h lib/*.h idt/*.h paging/*.h gdt/*.h
 OBJ=${C_SOURCES:.c=.o}
 
 CFLAGS=-m32 -ffreestanding
-GCC=gcc
-#GCC=i386-elf-gcc
-
-LD=ld
-#LD=i386-elf-ld
 
 all: os-image
 
 #GCC=gcc
 GCC=i386-elf-gcc
 #LD=ld
-LD=i386-elf-gcc
+LD=i386-elf-ld
 
 run: all
 	qemu-system-x86_64 -fda os-image
