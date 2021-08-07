@@ -21,6 +21,9 @@
 
 #define MAX_PHYS_PAGES 4096
 
+#define F_KERN 0x1 /* 1 for kernel, 0 for user */
+#define F_ZERO 0x2 /* 1 for set all bytes to 0, 0 don't bother */
+
 int pagecount;
 
 void* Kptov(void* phys);
@@ -76,9 +79,7 @@ struct virt_page
     uint8_t type;
     void* base_vaddr;
     virt_page* nextPage;
-    virt_page* nextFreePage;
     virt_page* previousPage;
-    virt_page* previousFreePage;
 };
 
 /*
@@ -89,19 +90,25 @@ typedef struct pool
 {
     // mutex lock not implemented yet
     int ring; /* permission level 0=kernel 3=user*/
-    virt_page virtual_pages[MAX_PHYS_PAGES/2]; /* Both kernel and user processes get 2048 pages to allocate from */
+    int next_free_page_index; /* Index of next free page */
+    void* heap_base_pointer; /* Base pointer to start of the heap */
+    virt_page virtual_pages[MAX_PHYS_PAGES/2]; /* Both kernel and user processes get 2048 pages to allocate from. The base address of the first page will also be the base address of the first MemorySegmentHeader for the heap */
 
 } pool;
 
 page_directory_entry *kernel_pd;
+pool* kernel_pool;
+pool* user_pool;
 //page_table_entry *kernel_ptables;
 
 void setupAvailablePages(uint8_t MRC, MemoryMapEntry** mRegions);
 void paging_init(void* dynamic_phys_base);
 void kernel_mapping_init();
-void init_pool(bool kernel);
+void init_pool(uint8_t flags);
 void palloc_init();
+void* palloc(int num_pages, uint8_t flags);
 void* get_next_free_physical_page();
-void map_page(void* paddr, void* vaddr, bool kernel);
+void map_page(void* paddr, void* vaddr, uint8_t flags);
+void init_heap_page(uint8_t flags);
 void clear_identity_pages();
 

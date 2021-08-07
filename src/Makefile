@@ -1,7 +1,14 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c lib/*.c idt/*.c paging/*.c gdt/*.c)
-HEADERS   = $(wildcard kernel/*.h drivers/*.h lib/*.h idt/*.h paging/*.h gdt/*.h)
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c lib/*.c idt/*.c paging/*.c gdt/*.c heap/*.c)
+HEADERS   = $(wildcard kernel/*.h drivers/*.h lib/*.h idt/*.h paging/*.h gdt/*.h heap/*.h)
 
 OBJ=${C_SOURCES:.c=.o}
+
+CFLAGS=-m32 -ffreestanding
+GCC=gcc
+#GCC=i386-elf-gcc
+
+LD=ld
+#LD=i386-elf-ld
 
 all: os-image
 

@@ -20,6 +20,7 @@ INPUT
     gdt/gdt.o
     paging/paging.o
     paging/pagedir.o
+    heap/heap.o
 
 )
 
