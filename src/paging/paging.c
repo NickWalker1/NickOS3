@@ -34,7 +34,7 @@ void paging_init(void* dynamic_phys_base){
     clear_identity_pages();
 
     palloc_init(dynamic_phys_base);
-    testFunc();
+    //testFunc();
     init_heap_page(F_KERN);
     //init_heap_page(!F_KERN);
 }
@@ -175,7 +175,7 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
             kernel_pd[pd_idx].read_write=1;
         }
 
-        pt=(page_table_entry*) (kernel_pd[pd_idx].page_table_base_addr<<PGBITS); //Push back to correct address
+        pt=(page_table_entry*) Kptov(kernel_pd[pd_idx].page_table_base_addr<<PGBITS); //Push back to correct address
         pt[pt_idx].page_base_addr=(uint32_t) paddr>>PGBITS; //Only 20 most significant bits
         pt[pt_idx].present=1;
         pt[pt_idx].read_write=1;
@@ -190,6 +190,32 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
 
 }
 
+/* unmaps physical page associated with the virtual address 
+ * return false if vaddr is not on a page boundary */
+void unmap_page(void* vaddr, uint8_t flags){
+    //check vaddr is on page boundary
+    if(!(int)vaddr%4096){
+        return false;
+    }
+
+    size_t pt_idx, pd_itx;
+    pd_itx=pd_no(vaddr);
+    if(flags & F_KERN){
+        if(kernel_pd[pd_itx].present==0){
+            //page not mapped anyway.
+            return true;
+        }
+        pt_idx=pt_no(vaddr);
+        page_table_entry* pt = (page_table_entry*)Kptov(kernel_pd[pd_itx].page_table_base_addr<<PGBITS);
+
+        pt[pt_idx].present=0;
+        return true;
+    }
+    else{
+        //TODO
+        //Repeat for user stuff
+    }
+}
 
 void init_pool(uint8_t flags){
     //find out how much space is required to store the pool info
