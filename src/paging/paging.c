@@ -34,8 +34,19 @@ void paging_init(void* dynamic_phys_base){
     clear_identity_pages();
 
     palloc_init(dynamic_phys_base);
+    testFunc();
     init_heap_page(F_KERN);
     //init_heap_page(!F_KERN);
+}
+
+void testFunc(){
+    /* IF I REMOVE THIS USELESS FUNCION IT BREAKS AND I HAVE NO IDEA WHY */
+    void* paddr = get_next_free_physical_page();
+    void* vaddr = 110010;
+    map_page(paddr,vaddr,0x8);
+
+    *(uint32_t*)vaddr=5;
+    println(itoa(*(uint32_t*)vaddr,str,BASE_DEC));
 }
 
 /* clears the first 6 identity pages used for converting to paging */
@@ -101,6 +112,8 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
  * given the number of pages to allocate and a flags variable
  */
 void* palloc(int num_pages, uint8_t flags){
+    //TODO FIX UGLINESS WITH VPAGE
+
     pool* mem_pool;
     void* return_addr=0;
     if(flags & F_KERN){
@@ -155,6 +168,7 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
         //if the page table page does not exist, create one and fill out the entry
         //in the PD.
         if(kernel_pd[pd_idx].present==0){
+            println("Creating new PT entry");
             void* pt_addr = get_next_free_physical_page();
             kernel_pd[pd_idx].page_table_base_addr=((uint32_t)pt_addr >> PGBITS); //Only most significant 20bits
             kernel_pd[pd_idx].present=1;
@@ -165,6 +179,7 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
         pt[pt_idx].page_base_addr=(uint32_t) paddr>>PGBITS; //Only 20 most significant bits
         pt[pt_idx].present=1;
         pt[pt_idx].read_write=1;
+
 
     }
     else{
@@ -202,24 +217,29 @@ void init_pool(uint8_t flags){
 }
 
 void init_heap_page(uint8_t flags){
+
     if(flags & F_KERN){
+        println("initialising kernel heap page");
         //Get a new fresh page to be used for heap
         void* paddr = get_next_free_physical_page();
+
         //Assuming virtual address space for heap starts at 0
         void* vaddr = 0;
 
         kernel_pool->ring=0;
         kernel_pool->next_free_page_index=1;
         kernel_pool->virtual_pages[0].type=M_ALLOCATED;
-        map_page(paddr,vaddr,0x1);
-        /*
+
+        map_page(paddr,vaddr,8);
+        
+        
         kernel_pool->virtual_pages[0].base_vaddr=vaddr;
         kernel_pool->virtual_pages[0].nextPage=0;
         kernel_pool->virtual_pages[0].previousPage=0;
 
         //initialise heap
         initialiseHeap(vaddr,PGSIZE);
-        */
+        
     }
     else{
         user_pool->ring=3;
