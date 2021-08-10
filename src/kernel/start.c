@@ -36,7 +36,8 @@ void main(){
     print(itoa((int) get_next_free_physical_page(),str,BASE_HEX));
 
 
-
+    void* test1 = malloc(100);
+    println(itoa((uint32_t)test1,str,BASE_DEC));
 
     //Hold
     while(1);

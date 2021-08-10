@@ -1,7 +1,10 @@
 #pragma once
 
+#include "pte.h"
 #include "../lib/typedefs.h"
 #include "../lib/smap.h"
+#include "../lib/screen.h"
+#include "../heap/heap.h"
 
 //                                   NickOS3 virtual memory layout
 // |---------------|------------|------------|-------------|------------|-------------------------|
@@ -20,8 +23,9 @@
 //#define PAGE_TABLES_BASE    0xC1100000 
 #define KERN_BASE           0xC0000000
 
-#define NO_ADDR  -1
+#define NO_ADDR  (void*)-1
 #define MAX_PHYS_PAGES 4096
+
 
 #define F_KERN 0x1 /* 1 for kernel, 0 for user */
 #define F_ZERO 0x2 /* 1 for set all bytes to 0, 0 don't bother */

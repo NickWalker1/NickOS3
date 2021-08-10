@@ -4,7 +4,7 @@ ReadDisk:
 
     mov ah, 0x02
     mov bx, BOOTLOADER_ENTRY
-    mov al, 32
+    mov al, 64
     mov dl, [BOOT_DISK]
     mov ch, 0x00
     mov dh, 0x00

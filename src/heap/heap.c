@@ -30,9 +30,53 @@ void* malloc(size_t size){
         currentSegment=currentSegment->nextFreeSegment;
     }
 
-    //return null pointer for unable to allocate memory.
+    //unable to allocate memory with current pages allocated
     if(currentSegment->MemoryLength<size){
-        
+        int numPages;
+        numPages=size+sizeof(MemorySegmentHeader)/PGSIZE;
+        int remainder=size%PGSIZE;
+        if(remainder!=0) numPages++;
+
+        void* base_addr=palloc(numPages,F_KERN); //TODO MAKE IT GET FLAGS SOMEHOW
+        if(base_addr==NO_ADDR);
+        MemorySegmentHeader* newSegment1 = (MemorySegmentHeader*) base_addr;
+        newSegment1->free=false;
+
+
+        //cross your fingers and pray to god this pointer shit is correct.
+        currentSegment->nextSegment=currentSegment;
+        if(remainder>sizeof(MemorySegmentHeader)){
+            MemorySegmentHeader* newSegment2 = (MemorySegmentHeader*) base_addr+sizeof(MemorySegmentHeader)+size;
+
+            newSegment2->free=true;
+            newSegment2->MemoryLength=remainder-sizeof(MemorySegmentHeader);
+            newSegment2->nextSegment=0;
+            newSegment2->nextFreeSegment=0;
+            newSegment2->previousSegment=newSegment1;
+            newSegment2->previousFreeSegment = currentSegment->free ? currentSegment : currentSegment->previousFreeSegment;
+            
+            //get the last segment even if it's not free
+            MemorySegmentHeader* tmp = currentSegment;
+            while(tmp->nextSegment!=0) tmp=tmp->nextSegment;
+            newSegment1->previousSegment=tmp;
+            
+            newSegment1->previousFreeSegment=currentSegment;
+            newSegment1->nextFreeSegment=newSegment2;
+            newSegment1->nextSegment=newSegment2;
+
+
+            currentSegment->nextSegment=newSegment1;
+            currentSegment->nextFreeSegment=newSegment2;
+        }
+        else{
+            newSegment1->nextSegment=0;
+            newSegment1->nextFreeSegment=0;
+            newSegment1->previousSegment=currentSegment;
+            newSegment1->previousFreeSegment = currentSegment->free ? currentSegment : currentSegment->previousFreeSegment;
+            
+            currentSegment->nextSegment=0;
+            currentSegment->nextFreeSegment=0;
+        }
     };
 
     //create new segment which is the remainder of the previous segment

@@ -5,6 +5,15 @@
 void PANIC(char* msg){
     //TODO add function to store CPU register data and print that
     draw_panic_screen();
+   /* println(" _____        _   _ _____ _____ 
+ |  __ \ /\   | \ | |_   _/ ____|
+ | |__) /  \  |  \| | | || |     
+ |  ___/ /\ \ | . ` | | || |     
+ | |  / ____ \| |\  |_| || |____ 
+ |_| /_/    \_\_| \_|_____\_____|
+                                 ");
+                                 */
+
     println("PANIC");
     println("System fucked");
     println(msg);

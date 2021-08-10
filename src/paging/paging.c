@@ -1,7 +1,4 @@
 #include "paging.h"
-#include "pte.h"
-#include "../lib/screen.h"
-#include "../heap/heap.h"
 
 
 page_directory_entry *kernel_pd;
