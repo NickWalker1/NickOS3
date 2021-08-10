@@ -14,6 +14,7 @@ INPUT
     lib/int.o
     lib/smap.o
     lib/string.o
+    lib/panic.o
     kernel/start.o
     idt/idt.o
     idt/interrupt.o

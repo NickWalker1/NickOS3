@@ -16,5 +16,17 @@ void initialiseHeap(void* baseAddr, int length){
 }
 
 void* malloc(size_t size){
+    
+    MemorySegmentHeader* segment=firstFreeSegment;
+    while(segment!=0 && segment->MemoryLength<size){
+        segment=segment->nextFreeSegment;
+    }
+    if(segment->MemoryLength>size){
+
+    }
+    if(segment==0){
+        //PALLOC PAGES
+    }
+
 
 }

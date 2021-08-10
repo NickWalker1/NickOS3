@@ -34,6 +34,7 @@ void paging_init(void* dynamic_phys_base){
     clear_identity_pages();
 
     palloc_init(dynamic_phys_base);
+    
     //testFunc();
     init_heap_page(F_KERN);
     //init_heap_page(!F_KERN);
@@ -125,7 +126,7 @@ void* palloc(int num_pages, uint8_t flags){
     
 
     for(int i=0;i<num_pages;i++){
-        virt_page vpage = kernel_pool->virtual_pages[kernel_pool->next_free_page_index];
+        virt_page next_free_vpage = kernel_pool->virtual_pages[kernel_pool->next_free_page_index];
         
         void* paddr=get_next_free_physical_page();
 
@@ -134,7 +135,8 @@ void* palloc(int num_pages, uint8_t flags){
             return 0;
         }
         //using idea that heap memory starts at 0x0 in virtual address space.
-        void* vaddr=(void*) (mem_pool->next_free_page_index*4096);
+        void* vaddr = next_free_vpage.base_vaddr;
+        // void* vaddr=(void*) (mem_pool->next_free_page_index*4096);
         //void* vaddr=Kvtop(paddr);
 
         map_page(paddr,vaddr,flags);
@@ -142,11 +144,11 @@ void* palloc(int num_pages, uint8_t flags){
         //ensure returned pointer points to start of the pages.
         if(i==0) return_addr=vaddr;
         
-        vpage.base_vaddr=vaddr;
-        vpage.type=M_ALLOCATED;
-        vpage.nextPage=0;
-        vpage.previousPage=&(kernel_pool->virtual_pages[kernel_pool->next_free_page_index-1]);
-        vpage.previousPage->nextPage=&vpage;
+        next_free_vpage.base_vaddr=vaddr;
+        next_free_vpage.type=M_ALLOCATED;
+        next_free_vpage.nextPage=0;
+        next_free_vpage.previousPage=&(kernel_pool->virtual_pages[kernel_pool->next_free_page_index-1]);
+        next_free_vpage.previousPage->nextPage=&next_free_vpage;
 
         kernel_pool->next_free_page_index++;
     }
@@ -219,7 +221,7 @@ void unmap_page(void* vaddr, uint8_t flags){
 
 void init_pool(uint8_t flags){
     //find out how much space is required to store the pool info
-    int numBytes= sizeof(pool);//TODO THIS IS WRONG
+    int numBytes= sizeof(pool);//TODO THIS MAY BE WRONG
     //do some maff to round up
     if(numBytes%PGSIZE!=0){
         numBytes=numBytes-(numBytes%PGSIZE)+PGSIZE;
@@ -262,6 +264,7 @@ void init_heap_page(uint8_t flags){
         kernel_pool->virtual_pages[0].base_vaddr=vaddr;
         kernel_pool->virtual_pages[0].nextPage=0;
         kernel_pool->virtual_pages[0].previousPage=0;
+
 
         //initialise heap
         initialiseHeap(vaddr,PGSIZE);

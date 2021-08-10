@@ -4,9 +4,11 @@
 #include "../lib/int.h"
 #include "../lib/smap.h"
 #include "../lib/string.h"
+#include "../lib/panic.h"
 #include "../idt/idt.h"
 #include "../paging/paging.h"
 #include "../gdt/gdt.h"
+
 
 
 extern uint8_t MemoryRegionCount;

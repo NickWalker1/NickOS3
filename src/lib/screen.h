@@ -7,6 +7,7 @@
 #define MAX_COLS 80
 
 #define WHITE_ON_BLACK 0x0f
+#define WHITE_ON_BLUE  0x1f
 
 
 //Screen device IO ports
@@ -32,3 +33,4 @@ void print_at(char* message, int col, int row);
 void print(char* message);
 void println(char* message);
 void clear_screen();
+void test_colours();

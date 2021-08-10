@@ -149,14 +149,23 @@ void println(char* message){
 }
 
 void clear_screen(){
-    int row =0;
-    int col =0;
+    int row;
+    int col;
 
     for(row=0; row<MAX_ROWS;row++){
-        for(;col<MAX_COLS;col++){
+        for(col=0;col<MAX_COLS;col++){
             print_char_loc(' ',col,row,WHITE_ON_BLACK);
         }
     }
     set_cursor(get_screen_offset(0,0));
 }
 
+
+void test_colours(){
+    int colour =0;
+    for(int i=0;i<0xf;i++){
+        for(int j=0;j<0xf;j++){
+            print_char_loc('a',i,j,colour++);
+        }
+    }
+}
