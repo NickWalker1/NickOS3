@@ -110,7 +110,8 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
  * Calculates virtual address of first pointer depending on
  * number of heap pages already allocated, and starts at 0.
  * Returns virtual base address of next page allocated 
- * given the number of pages to allocate and a flags variable
+ * given the number of pages to allocate and a flags variable.
+ * Will return NO_ADDR if unable ot allocate memory.
  */
 void* palloc(int num_pages, uint8_t flags){
     //TODO FIX UGLINESS WITH VPAGE
@@ -131,8 +132,9 @@ void* palloc(int num_pages, uint8_t flags){
         void* paddr=get_next_free_physical_page();
 
         if(paddr==0){
-            //TODO PANIC CAN'T GET ANYMORE PAGES
-            return 0;
+            
+            //unable to allocate more pages
+            return NO_ADDR;
         }
         //using idea that heap memory starts at 0x0 in virtual address space.
         void* vaddr = next_free_vpage.base_vaddr;
@@ -194,7 +196,7 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
 
 /* unmaps physical page associated with the virtual address 
  * return false if vaddr is not on a page boundary */
-void unmap_page(void* vaddr, uint8_t flags){
+bool unmap_page(void* vaddr, uint8_t flags){
     //check vaddr is on page boundary
     if(!(int)vaddr%4096){
         return false;
@@ -219,6 +221,12 @@ void unmap_page(void* vaddr, uint8_t flags){
     }
 }
 
+
+/* Initialises page pool for either user or kernel.
+ * It will calculate the number of pages required and 
+ * manually allocate them and poin the pool struct to
+ * the start of this region and returns it.
+ */
 void init_pool(uint8_t flags){
     //find out how much space is required to store the pool info
     int numBytes= sizeof(pool);//TODO THIS MAY BE WRONG
@@ -244,10 +252,13 @@ void init_pool(uint8_t flags){
     }
 }
 
+
+/* Initialses the first heap page for a user or the kernel.
+ */
 void init_heap_page(uint8_t flags){
 
     if(flags & F_KERN){
-        println("initialising kernel heap page");
+        println("Initialising kernel heap page");
         //Get a new fresh page to be used for heap
         void* paddr = get_next_free_physical_page();
 
@@ -258,7 +269,7 @@ void init_heap_page(uint8_t flags){
         kernel_pool->next_free_page_index=1;
         kernel_pool->virtual_pages[0].type=M_ALLOCATED;
 
-        map_page(paddr,vaddr,8);
+        map_page(paddr,vaddr,F_KERN);
         
         
         kernel_pool->virtual_pages[0].base_vaddr=vaddr;
@@ -290,5 +301,5 @@ void* get_next_free_physical_page(){
             return physical_page_entries[i].phys_addr; 
         }
     }
-    return 0;
+    return NO_ADDR;
 }

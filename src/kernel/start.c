@@ -36,12 +36,6 @@ void main(){
     print(itoa((int) get_next_free_physical_page(),str,BASE_HEX));
 
 
-    //clear_screen();
-    //test_colours();
-
-    PANIC("Test");
-    
-
 
     //Hold
     while(1);

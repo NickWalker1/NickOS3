@@ -20,6 +20,7 @@
 //#define PAGE_TABLES_BASE    0xC1100000 
 #define KERN_BASE           0xC0000000
 
+#define NO_ADDR  -1
 #define MAX_PHYS_PAGES 4096
 
 #define F_KERN 0x1 /* 1 for kernel, 0 for user */
@@ -110,5 +111,6 @@ void palloc_init();
 void* palloc(int num_pages, uint8_t flags);
 void* get_next_free_physical_page();
 void map_page(void* paddr, void* vaddr, uint8_t flags);
+bool unmap_page(void* vaddr, uint8_t flags);
 void init_heap_page(uint8_t flags);
 void clear_identity_pages();
