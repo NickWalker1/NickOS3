@@ -5,6 +5,7 @@
 #include "../lib/smap.h"
 #include "../lib/panic.h"
 #include "../lib/screen.h"
+#include "../lib/string.h"
 #include "../heap/heap.h"
 
 //                                   NickOS3 virtual memory layout
@@ -32,6 +33,7 @@
 
 #define F_KERN 0x1 /* 1 for kernel, 0 for user */
 #define F_ZERO 0x2 /* 1 for set all bytes to 0, 0 don't bother */
+#define F_ASSERT 0x4 /* 1 for PANIC if cannot be completed */
 
 #define F_VERBOSE 0x80 /* 1 for print, 0 for not */
 

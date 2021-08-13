@@ -32,15 +32,6 @@ void main(){
     println("Initialised IDT.");
 
 
-
-    void* test3= malloc(5000);
-    // print(itoa((uint32_t)lookup_phys(test3, true),str,BASE_HEX));
-
-    *(uint32_t*)test3=0x432412;
-    println(itoa(*(uint32_t*)test3,str,BASE_HEX));
-
-
-
     //Hold
     while(1);
 

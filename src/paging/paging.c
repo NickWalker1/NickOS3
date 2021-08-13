@@ -38,8 +38,8 @@ void paging_init(void* dynamic_phys_base){
     //init_heap_page(!F_KERN);
 }
 
+/* random test function */
 void testFunc(){
-    /* IF I REMOVE THIS USELESS FUNCION IT BREAKS AND I HAVE NO IDEA WHY */
     void* paddr = get_next_free_physical_page();
     void* vaddr = 0x4000;
     map_page(paddr,vaddr,F_VERBOSE | F_KERN);
@@ -131,8 +131,8 @@ void* palloc(int num_pages, uint8_t flags){
         
         void* paddr=get_next_free_physical_page();
 
-        if(paddr==0){
-            
+        if(paddr==NO_ADDR){
+            if(flags & F_ASSERT) PANIC("UNABLE TO ALLOCATE REQUIRED PAGES");
             //unable to allocate more pages
             return NO_ADDR;
         }
@@ -141,7 +141,7 @@ void* palloc(int num_pages, uint8_t flags){
         void* vaddr=(void*) ((mem_pool->next_free_page_index)*4096);
         //void* vaddr=Kvtop(paddr);
 
-        map_page(paddr,vaddr,flags| F_VERBOSE);
+        map_page(paddr,vaddr,flags);
         
         
         //ensure returned pointer points to start of the pages.
@@ -154,6 +154,10 @@ void* palloc(int num_pages, uint8_t flags){
         next_free_vpage.previousPage->nextPage=&next_free_vpage;
 
         kernel_pool->next_free_page_index++;
+    }
+
+    if(flags&F_ZERO){
+        memset(return_addr,0,num_pages*PGSIZE);
     }
 
     return return_addr;
@@ -179,7 +183,7 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
             void* pt_addr = get_next_free_physical_page();
             println("New PD entry at phys: ");
             print(itoa((uint32_t)pt_addr,str,BASE_HEX));
-            map_page(pt_addr,Kptov(pt_addr),F_KERN | F_VERBOSE); /* so that you can write to this address in kernel address space */
+            map_page(pt_addr,Kptov(pt_addr),F_KERN); /* so that you can write to this address in kernel address space */
 
             kernel_pd[pd_idx].page_table_base_addr=((uint32_t)pt_addr >> PGBITS); //Only most significant 20bits
             kernel_pd[pd_idx].present=1;
