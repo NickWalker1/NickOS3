@@ -3,6 +3,7 @@
 #include "pte.h"
 #include "../lib/typedefs.h"
 #include "../lib/smap.h"
+#include "../lib/panic.h"
 #include "../lib/screen.h"
 #include "../heap/heap.h"
 
@@ -20,7 +21,9 @@
 //PAGE TABLES SHIT NOT USED, ONLY USING PD ADDR, PAGE TABLES INSTEAD ALLOCATED IN DYNAMIC AREA AS REQUIRED
 
 #define PAGE_DIRECTORY_BASE 0xC0006000
+
 //#define PAGE_TABLES_BASE    0xC1100000 
+
 #define KERN_BASE           0xC0000000
 
 #define NO_ADDR  (void*)-1
@@ -29,6 +32,8 @@
 
 #define F_KERN 0x1 /* 1 for kernel, 0 for user */
 #define F_ZERO 0x2 /* 1 for set all bytes to 0, 0 don't bother */
+
+#define F_VERBOSE 0x80 /* 1 for print, 0 for not */
 
 extern int pagecount;
 
@@ -118,3 +123,4 @@ void map_page(void* paddr, void* vaddr, uint8_t flags);
 bool unmap_page(void* vaddr, uint8_t flags);
 void init_heap_page(uint8_t flags);
 void clear_identity_pages();
+void* lookup_phys(void* vaddr, bool dump);

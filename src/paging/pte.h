@@ -37,7 +37,8 @@
 
 /* Obtains page table index from a virtual address. */
 static inline unsigned pt_no (const void *va) {
-  return (size_t) va & PTMASK) >> PTSHIFT;
+  // return (size_t) va & PTMASK) >> PTSHIFT;
+  return ((size_t) va >> PGBITS) & 0x3ff;
 }
 
 /* Obtains page directory index from a virtual address. */

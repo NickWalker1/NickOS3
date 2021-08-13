@@ -20,24 +20,26 @@ void main(){
     setupAvailablePages(UsableMemoryRegionCount, usableMemoryRegions);
     println("Number of dynamic pages available:");
     print(itoa(pagecount,str,BASE_DEC));
-    println("Dynamic memory area physical start addr:");
-    print(itoa(usableMemoryRegions[1]->Base,str,BASE_HEX));
     
     gdt_init();
     
+
     paging_init((void*) usableMemoryRegions[0]->Base);
     println("Paging intialised");
 
     //Initialise IDT
-    //idt_init();
-    //println("Initialised IDT. NOTTTT");
-
-    println("First free page addr:");
-    print(itoa((int) get_next_free_physical_page(),str,BASE_HEX));
+    idt_init();
+    println("Initialised IDT.");
 
 
-    void* test1 = malloc(100);
-    println(itoa((uint32_t)test1,str,BASE_DEC));
+
+    void* test3= malloc(5000);
+    // print(itoa((uint32_t)lookup_phys(test3, true),str,BASE_HEX));
+
+    *(uint32_t*)test3=0x432412;
+    println(itoa(*(uint32_t*)test3,str,BASE_HEX));
+
+
 
     //Hold
     while(1);

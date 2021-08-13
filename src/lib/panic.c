@@ -17,6 +17,8 @@ void PANIC(char* msg){
     println("PANIC");
     println("System fucked");
     println(msg);
+
+    __asm__ volatile("cli;hlt");
 }
 
 
@@ -29,4 +31,8 @@ void draw_panic_screen(){
     }
     set_cursor(get_screen_offset(0,0));
     
+}
+
+void halt(){
+    __asm__ volatile("cli;hlt");
 }

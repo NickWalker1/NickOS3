@@ -33,12 +33,17 @@ void* malloc(size_t size){
     //unable to allocate memory with current pages allocated
     if(currentSegment->MemoryLength<size){
         int numPages;
-        numPages=size+sizeof(MemorySegmentHeader)/PGSIZE;
+        numPages=(size+sizeof(MemorySegmentHeader))/PGSIZE;
         int remainder=size%PGSIZE;
         if(remainder!=0) numPages++;
 
         void* base_addr=palloc(numPages,F_KERN); //TODO MAKE IT GET FLAGS SOMEHOW
-        if(base_addr==NO_ADDR);
+
+        //println(itoa(kernel_pd[pd_no(base_addr)].page_table_base_addr<<12,str,BASE_HEX));
+        //println(itoa(((page_table_entry*)(kernel_pd[pd_no(base_addr)].page_table_base_addr<<12))[pt_no(base_addr)].page_base_addr<<12,str,BASE_HEX));
+
+
+        if(base_addr==NO_ADDR) return NO_ADDR;
         MemorySegmentHeader* newSegment1 = (MemorySegmentHeader*) base_addr;
         newSegment1->free=false;
 
@@ -46,7 +51,8 @@ void* malloc(size_t size){
         //cross your fingers and pray to god this pointer shit is correct.
         currentSegment->nextSegment=currentSegment;
         if(remainder>sizeof(MemorySegmentHeader)){
-            MemorySegmentHeader* newSegment2 = (MemorySegmentHeader*) base_addr+sizeof(MemorySegmentHeader)+size;
+            void* newSegment2Addr= base_addr+sizeof(MemorySegmentHeader)+size;
+            MemorySegmentHeader* newSegment2 = (MemorySegmentHeader*) newSegment2Addr; 
 
             newSegment2->free=true;
             newSegment2->MemoryLength=remainder-sizeof(MemorySegmentHeader);
@@ -67,6 +73,8 @@ void* malloc(size_t size){
 
             currentSegment->nextSegment=newSegment1;
             currentSegment->nextFreeSegment=newSegment2;
+
+
         }
         else{
             newSegment1->nextSegment=0;
@@ -77,11 +85,12 @@ void* malloc(size_t size){
             currentSegment->nextSegment=0;
             currentSegment->nextFreeSegment=0;
         }
-    };
+        return base_addr+sizeof(MemorySegmentHeader);
+    }
 
     //create new segment which is the remainder of the previous segment
     //which starts at the address directly after the malloced area
-    MemorySegmentHeader* newSegment= (MemorySegmentHeader*)currentSegment+sizeof(MemorySegmentHeader)+size;
+    MemorySegmentHeader* newSegment= (MemorySegmentHeader*)((uint32_t*)currentSegment+sizeof(MemorySegmentHeader)+size);
     newSegment->free=true;
     newSegment->MemoryLength=currentSegment->MemoryLength-(sizeof(MemorySegmentHeader)+ size);
     newSegment->nextFreeSegment=currentSegment->nextFreeSegment;

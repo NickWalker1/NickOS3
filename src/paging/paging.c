@@ -16,11 +16,11 @@ phys_page physical_page_entries[MAX_PHYS_PAGES];
 
 /* Converts physical address to kernel virtual address */
 void* Kptov(void* phys){
-    return (void*) phys+KERN_BASE;
+    return (void*) (phys+(uint32_t)KERN_BASE);
 }
 /* Converts virtual address to kernel physical address */
 void* Kvtop(void* virt){
-    return (void*) virt-KERN_BASE;
+    return (void*) virt-(uint32_t)KERN_BASE;
 }
 
 
@@ -32,7 +32,8 @@ void paging_init(void* dynamic_phys_base){
 
     palloc_init(dynamic_phys_base);
     
-    //testFunc();
+   // testFunc();
+    
     init_heap_page(F_KERN);
     //init_heap_page(!F_KERN);
 }
@@ -40,8 +41,8 @@ void paging_init(void* dynamic_phys_base){
 void testFunc(){
     /* IF I REMOVE THIS USELESS FUNCION IT BREAKS AND I HAVE NO IDEA WHY */
     void* paddr = get_next_free_physical_page();
-    void* vaddr = 110010;
-    map_page(paddr,vaddr,0x8);
+    void* vaddr = 0x4000;
+    map_page(paddr,vaddr,F_VERBOSE | F_KERN);
 
     *(uint32_t*)vaddr=5;
     println(itoa(*(uint32_t*)vaddr,str,BASE_DEC));
@@ -57,9 +58,9 @@ void clear_identity_pages(){
 /* Initialises both user and kernel pools */
 void palloc_init(){
 
-    init_pool(true);
+    init_pool(F_KERN);
 
-    init_pool(false);
+    //init_pool(false);
 }
 
 /* Counts number of pages available in free memory*/
@@ -93,10 +94,12 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
             x++;
         }
     }
-
-    //reserved for kernel data so will not be overwriten. 
-    for(i=0;i<6;i++){
+    //reserve the kernel pages.
+    println("Mapping kernel pages");
+    for(i=0;i<32;i++){
         physical_page_entries[i].type=M_RESERVED;
+        void* phys_addr= i*4096;
+        map_page(phys_addr,Kptov(phys_addr),F_KERN);
     }
 }
 
@@ -134,11 +137,12 @@ void* palloc(int num_pages, uint8_t flags){
             return NO_ADDR;
         }
         //using idea that heap memory starts at 0x0 in virtual address space.
-        void* vaddr = next_free_vpage.base_vaddr;
-        // void* vaddr=(void*) (mem_pool->next_free_page_index*4096);
+        //void* vaddr = next_free_vpage.base_vaddr;
+        void* vaddr=(void*) ((mem_pool->next_free_page_index)*4096);
         //void* vaddr=Kvtop(paddr);
 
-        map_page(paddr,vaddr,flags);
+        map_page(paddr,vaddr,flags| F_VERBOSE);
+        
         
         //ensure returned pointer points to start of the pages.
         if(i==0) return_addr=vaddr;
@@ -158,6 +162,8 @@ void* palloc(int num_pages, uint8_t flags){
 
 /* Adds pd, pt mappings for a new page given a virtual and physical address*/
 void map_page(void* paddr, void* vaddr, uint8_t flags){
+    if((uint32_t)vaddr%PGSIZE || (uint32_t)paddr%4096) PANIC("VADDR NOT 4k ALIGNED"); 
+        
 
     if(flags & F_KERN){//IF KERNEL
         size_t pd_idx, pt_idx;
@@ -169,8 +175,12 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
         //if the page table page does not exist, create one and fill out the entry
         //in the PD.
         if(kernel_pd[pd_idx].present==0){
-            println("Creating new PT entry");
+            // println("Creating new PD entry");
             void* pt_addr = get_next_free_physical_page();
+            println("New PD entry at phys: ");
+            print(itoa((uint32_t)pt_addr,str,BASE_HEX));
+            map_page(pt_addr,Kptov(pt_addr),F_KERN | F_VERBOSE); /* so that you can write to this address in kernel address space */
+
             kernel_pd[pd_idx].page_table_base_addr=((uint32_t)pt_addr >> PGBITS); //Only most significant 20bits
             kernel_pd[pd_idx].present=1;
             kernel_pd[pd_idx].read_write=1;
@@ -187,6 +197,12 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
         //TODO implement user shit
         //find out how many pages already allocated to user then virtual address will be
         //that number * 4096 :)
+    }
+    if(flags & F_VERBOSE){
+        println("Mapped Page (P:V) ");
+        print(itoa((int)paddr,str,BASE_HEX));
+        print(":");
+        print(itoa((int)vaddr,str,BASE_HEX));
     }
 
 }
@@ -245,8 +261,9 @@ void init_pool(uint8_t flags){
             else user_pool=(pool*) vaddr;
         }
 
-        map_page(paddr,vaddr,F_KERN);
+        map_page(paddr,vaddr,flags );
     }
+
 }
 
 
@@ -255,7 +272,6 @@ void init_pool(uint8_t flags){
 void init_heap_page(uint8_t flags){
 
     if(flags & F_KERN){
-        println("Initialising kernel heap page");
         //Get a new fresh page to be used for heap
         void* paddr = get_next_free_physical_page();
 
@@ -299,4 +315,56 @@ void* get_next_free_physical_page(){
         }
     }
     return NO_ADDR;
+}
+
+
+/* Returns physical base page address for that virtual address
+ * Can also return bit breakdown of the associated PTE given 
+ * dump=true */
+void* lookup_phys(void* vaddr, bool dump){
+    size_t pt_idx, pd_idx;
+    page_table_entry* pt;
+
+    pd_idx=pd_no(vaddr);
+    pt_idx=pt_no(vaddr);
+
+    if(kernel_pd[pd_idx].present==0){
+        return NO_ADDR;
+    }
+    pt=(page_table_entry*) Kptov(kernel_pd[pd_idx].page_table_base_addr<<PGBITS);
+    if(!dump){
+        if(pt[pt_idx].present==0) return NO_ADDR;
+
+    }
+
+    page_table_entry pte=pt[pt_idx];
+    println("\nPHYS DUMP:");
+    println("Vaddr: ");
+    print(itoa((uint32_t)vaddr,str,BASE_HEX));
+    println("PTE DATA: ");
+    println("Present:");
+    print(itoa(pte.present,str,BASE_HEX));
+    println("Read/Write:");
+    print(itoa(pte.read_write,str,BASE_HEX));
+    println("User Supervisor:");
+    print(itoa(pte.user_supervisor,str,BASE_HEX));
+    println("Write Through:");
+    print(itoa(pte.write_through,str,BASE_HEX));
+    println("Cache Disabled:");
+    print(itoa(pte.cache_disabled,str,BASE_HEX));
+    println("Accessed:");
+    print(itoa(pte.accessed,str,BASE_HEX));
+    println("Dirty:");
+    print(itoa(pte.dirty,str,BASE_HEX));
+    println("Page Table Attribute Index:");
+    print(itoa(pte.page_table_attribute_index,str,BASE_HEX));
+    println("Global:");
+    print(itoa(pte.global,str,BASE_HEX));
+    println("Avail:");
+    print(itoa(pte.available,str,BASE_HEX));
+    println("Page Base Addr:");
+    print(itoa(pte.page_base_addr<<PGBITS,str,BASE_HEX));
+    println("");
+    
+    return (void*)(pt[pt_idx].page_base_addr>>PGBITS);
 }

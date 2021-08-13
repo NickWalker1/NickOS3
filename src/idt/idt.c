@@ -3,7 +3,7 @@
 #include "cpu_state.h"
 #include "../lib/int.h"
 
-exception_definition exceptions[] =
+static exception_definition exceptions[] =
     {
         {
             .interrupt_number = 0,
@@ -227,19 +227,24 @@ void idt_global_int_handler(exception_state *state){
 }
 
 void idt_global_exc_handler(exception_state *state){
-    println("HANDLED EXCEPTION: ");
-    //if(state->interrupt_number==13){
-        state_dump(state);
+    println("EXCEPTION: ");
+    if(state->interrupt_number==8){
+        println("DOUBLE FAULT");
         __asm__ volatile("cli;hlt");
-        while(1);
-    //}
+    }
+    state_dump(state);
+    __asm__ volatile("cli;hlt");
+}
+
+    /*
     uint8_t code=state->error_code&0b1111111111111110;
     print(itoa(state->interrupt_number,str,BASE_DEC));
     print(" : ");
     print(exceptions[state->interrupt_number].description);
     print(" : ");
     print(itoa(code,str,BASE_BIN));
-}
+    */
+    
 
 void state_dump(exception_state *state){
     char str[128];
@@ -259,15 +264,15 @@ void state_dump(exception_state *state){
     println("CR3:");
     print(itoa(state->cr3,str,BASE_BIN));
     println("CR2:");
-    print(itoa(state->cr2,str,BASE_BIN));
+    print(itoa(state->cr2,str,BASE_HEX));
     println("CR0:");
     print(itoa(state->cr0,str,BASE_BIN));
     println("DS:");
     print(itoa(state->ds,str,BASE_HEX));
     println("INT_NUM:");
-    print(itoa(state->interrupt_number,str,BASE_HEX));
+    print(itoa(state->interrupt_number,str,BASE_DEC));
     println("ERROR_CODE:");
-    print(itoa(state->error_code,str,BASE_HEX));
+    print(itoa(state->error_code,str,BASE_BIN));
     println("EIP:");
     print(itoa(state->eip,str,BASE_HEX));
     println("CS:");
