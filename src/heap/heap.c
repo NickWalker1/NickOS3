@@ -37,11 +37,8 @@ void* malloc(size_t size){
         int remainder=size%PGSIZE;
         if(remainder!=0) numPages++;
 
-        void* base_addr=palloc(numPages,F_KERN); //TODO MAKE IT GET FLAGS SOMEHOW
-
-        //println(itoa(kernel_pd[pd_no(base_addr)].page_table_base_addr<<12,str,BASE_HEX));
-        //println(itoa(((page_table_entry*)(kernel_pd[pd_no(base_addr)].page_table_base_addr<<12))[pt_no(base_addr)].page_base_addr<<12,str,BASE_HEX));
-
+        //TODO make it get process info from thread_control block to know which pool to allocate from
+        void* base_addr=palloc_heap(numPages,kernel_pool,F_KERN); //TODO MAKE IT GET FLAGS SOMEHOW
 
         if(base_addr==NO_ADDR) return NO_ADDR;
         MemorySegmentHeader* newSegment1 = (MemorySegmentHeader*) base_addr;
@@ -49,7 +46,7 @@ void* malloc(size_t size){
 
 
         //cross your fingers and pray to god this pointer shit is correct.
-        currentSegment->nextSegment=currentSegment;
+        //currentSegment->nextSegment=currentSegment;
         if(remainder>sizeof(MemorySegmentHeader)){
             void* newSegment2Addr= base_addr+sizeof(MemorySegmentHeader)+size;
             MemorySegmentHeader* newSegment2 = (MemorySegmentHeader*) newSegment2Addr; 
@@ -90,7 +87,8 @@ void* malloc(size_t size){
 
     //create new segment which is the remainder of the previous segment
     //which starts at the address directly after the malloced area
-    MemorySegmentHeader* newSegment= (MemorySegmentHeader*)((uint32_t*)currentSegment+sizeof(MemorySegmentHeader)+size);
+    void* newSegment_addr= ((void*)currentSegment)+sizeof(MemorySegmentHeader)+size;
+    MemorySegmentHeader* newSegment= (MemorySegmentHeader*) newSegment_addr;
     newSegment->free=true;
     newSegment->MemoryLength=currentSegment->MemoryLength-(sizeof(MemorySegmentHeader)+ size);
     newSegment->nextFreeSegment=currentSegment->nextFreeSegment;
@@ -138,7 +136,7 @@ void CombineFreeSegments(MemorySegmentHeader* a, MemorySegmentHeader* b) {
 		a->nextFreeSegment->previousFreeSegment = b;
 	}
 }
-
+/* TODO FIX */
 void free(void* address) {
 	MemorySegmentHeader* currentMemorySegment;
 		
@@ -164,4 +162,9 @@ void free(void* address) {
 		if (currentMemorySegment->previousSegment->free) CombineFreeSegments(currentMemorySegment, currentMemorySegment->previousSegment);
 
 	}
+    /* TODO 
+    if(currentMemorySegment->MemoryLength>=4096){
+        unmap_page(address, F_KERN);
+    }
+    */
 }

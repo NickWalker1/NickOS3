@@ -26,15 +26,18 @@ void* Kvtop(void* virt){
 
 /* Initialises paging and page allocation mechanism.
     * Removes identity pages
-    * Maps dynamic memory space to page heap */
-void paging_init(void* dynamic_phys_base){
+    * Sets up kernel pool */
+void paging_init(){
     clear_identity_pages();
 
-    palloc_init(dynamic_phys_base);
+    kernel_pool=(pool*) init_pool(F_KERN);
+
+    init_heap_page(kernel_pool,F_KERN);
+
     
    // testFunc();
     
-    init_heap_page(F_KERN);
+    // init_heap_page(,F_KERN);
     //init_heap_page(!F_KERN);
 }
 
@@ -55,13 +58,7 @@ void clear_identity_pages(){
         kernel_pd[i].present=0;
     }
 }
-/* Initialises both user and kernel pools */
-void palloc_init(){
 
-    init_pool(F_KERN);
-
-    //init_pool(false);
-}
 
 /* Counts number of pages available in free memory*/
 void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usableMemoryRegions){
@@ -113,18 +110,9 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
  * given the number of pages to allocate and a flags variable.
  * Will return NO_ADDR if unable ot allocate memory.
  */
-void* palloc(int num_pages, uint8_t flags){
-    //TODO FIX UGLINESS WITH VPAGE
+void* palloc_heap(int num_pages,pool* mem_pool, uint8_t flags){
 
-    pool* mem_pool;
     void* return_addr=0;
-    if(flags & F_KERN){
-        mem_pool=kernel_pool;
-    }
-    else{
-        mem_pool=user_pool;
-    }
-    
 
     for(int i=0;i<num_pages;i++){
         virt_page next_free_vpage = kernel_pool->virtual_pages[kernel_pool->next_free_page_index];
@@ -137,9 +125,7 @@ void* palloc(int num_pages, uint8_t flags){
             return NO_ADDR;
         }
         //using idea that heap memory starts at 0x0 in virtual address space.
-        //void* vaddr = next_free_vpage.base_vaddr;
         void* vaddr=(void*) ((mem_pool->next_free_page_index)*4096);
-        //void* vaddr=Kvtop(paddr);
 
         map_page(paddr,vaddr,flags);
         
@@ -169,39 +155,32 @@ void map_page(void* paddr, void* vaddr, uint8_t flags){
     if((uint32_t)vaddr%PGSIZE || (uint32_t)paddr%4096) PANIC("VADDR NOT 4k ALIGNED"); 
         
 
-    if(flags & F_KERN){//IF KERNEL
-        size_t pd_idx, pt_idx;
-        page_table_entry* pt;
+    size_t pd_idx, pt_idx;
+    page_table_entry* pt;
 
-        pd_idx=pd_no(vaddr);
-        pt_idx=pt_no(vaddr);
+    pd_idx=pd_no(vaddr);
+    pt_idx=pt_no(vaddr);
 
-        //if the page table page does not exist, create one and fill out the entry
-        //in the PD.
-        if(kernel_pd[pd_idx].present==0){
-            // println("Creating new PD entry");
-            void* pt_addr = get_next_free_physical_page();
-            println("New PD entry at phys: ");
-            print(itoa((uint32_t)pt_addr,str,BASE_HEX));
-            map_page(pt_addr,Kptov(pt_addr),F_KERN); /* so that you can write to this address in kernel address space */
+    //TODO load pd form thread_control_block instead of just using kernel.
 
-            kernel_pd[pd_idx].page_table_base_addr=((uint32_t)pt_addr >> PGBITS); //Only most significant 20bits
-            kernel_pd[pd_idx].present=1;
-            kernel_pd[pd_idx].read_write=1;
-        }
+    //if the page table page does not exist, create one and fill out the entry
+    //in the PD.
+    if(kernel_pd[pd_idx].present==0){
+        void* pt_addr = get_next_free_physical_page();
+        map_page(pt_addr,Kptov(pt_addr),F_KERN); /* so that you can write to this address in kernel address space */
 
-        pt=(page_table_entry*) Kptov(kernel_pd[pd_idx].page_table_base_addr<<PGBITS); //Push back to correct address
-        pt[pt_idx].page_base_addr=(uint32_t) paddr>>PGBITS; //Only 20 most significant bits
-        pt[pt_idx].present=1;
-        pt[pt_idx].read_write=1;
-
-
+        kernel_pd[pd_idx].page_table_base_addr=((uint32_t)pt_addr >> PGBITS); //Only most significant 20bits
+        kernel_pd[pd_idx].present=1;
+        kernel_pd[pd_idx].read_write=1;
     }
-    else{
-        //TODO implement user shit
-        //find out how many pages already allocated to user then virtual address will be
-        //that number * 4096 :)
-    }
+    pt=(page_table_entry*) Kptov(kernel_pd[pd_idx].page_table_base_addr<<PGBITS); //Push back to correct address
+    pt[pt_idx].page_base_addr=(uint32_t) paddr>>PGBITS; //Only 20 most significant bits
+    pt[pt_idx].present=1;
+    pt[pt_idx].read_write=1;
+
+    if(flags & F_KERN) pt[pt_idx].user_supervisor=1;
+        
+        
     if(flags & F_VERBOSE){
         println("Mapped Page (P:V) ");
         print(itoa((int)paddr,str,BASE_HEX));
@@ -244,7 +223,7 @@ bool unmap_page(void* vaddr, uint8_t flags){
  * manually allocate them and poin the pool struct to
  * the start of this region and returns it.
  */
-void init_pool(uint8_t flags){
+void* init_pool(uint8_t flags){
     //find out how much space is required to store the pool info
     int numBytes= sizeof(pool);//TODO THIS MAY BE WRONG
     //do some maff to round up
@@ -256,54 +235,58 @@ void init_pool(uint8_t flags){
     void* paddr;
     void* ptaddr;
 
+    void* pool_addr;
+
     for(int i=0;i<numPages;i++){
         paddr=get_next_free_physical_page();
         void* vaddr  = Kptov(paddr);
+        
+        if(i==0) pool_addr=vaddr;
+
+        map_page(paddr,vaddr,flags);
+
+        /*
         if(i==0){
             //update pool pointer to point to start of this allocated section.
             if(flags & F_KERN)kernel_pool=(pool*) vaddr;
             else user_pool=(pool*) vaddr;
         }
-
-        map_page(paddr,vaddr,flags );
+        */
     }
 
+    return pool_addr;
 }
 
 
-/* Initialses the first heap page for a user or the kernel.
+/* Initialses the first heap page for a given pool
  */
-void init_heap_page(uint8_t flags){
+void init_heap_page(pool* pl, uint8_t flags){
+    if(pl->next_free_page_index) PANIC("ALREADY INITIALISED HEAP"); /* If next free page index is not 0 then PANIC */
+
+    //Get a new fresh page to be used for heap
+    void* paddr = get_next_free_physical_page();
+
+    //Assuming virtual address space for heap starts at 0
+    void* vaddr = 0;
+
+    pl->next_free_page_index=1;
+    pl->virtual_pages[0].type=M_ALLOCATED;
+
+    map_page(paddr,vaddr,F_KERN);
+
+    pl->virtual_pages[0].base_vaddr=vaddr;
+    pl->virtual_pages[0].nextPage=0;
+    pl->virtual_pages[0].previousPage=0;
 
     if(flags & F_KERN){
-        //Get a new fresh page to be used for heap
-        void* paddr = get_next_free_physical_page();
-
-        //Assuming virtual address space for heap starts at 0
-        void* vaddr = 0;
-
-        kernel_pool->ring=0;
-        kernel_pool->next_free_page_index=1;
-        kernel_pool->virtual_pages[0].type=M_ALLOCATED;
-
-        map_page(paddr,vaddr,F_KERN);
-        
-        
-        kernel_pool->virtual_pages[0].base_vaddr=vaddr;
-        kernel_pool->virtual_pages[0].nextPage=0;
-        kernel_pool->virtual_pages[0].previousPage=0;
-
-
-        //initialise heap
-        initialiseHeap(vaddr,PGSIZE);
-        
+        pl->ring=0;
     }
     else{
-        user_pool->ring=3;
-        //user_pool->virtual_pages[0]=0; //Just ensure it's NULL
+        pl->ring=3;
     }
-    //TODO if doing the init_pd* thing then set cr3 to Kvtop(init_pd) but just check that it definitely just want's physical address not virtual.#
 
+    //initialise heap
+    initialiseHeap(vaddr,PGSIZE);
 }
 
 /* Returns the physical address of the next free physical page and sets

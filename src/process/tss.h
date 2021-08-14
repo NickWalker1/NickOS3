@@ -66,7 +66,7 @@ struct tss
     uint16_t fs, :16;
     uint16_t gs, :16;
     uint16_t ldt, :16;
-    uint16_t trace, bitmap;
+    uint16_t trace,IOPB;
   };
 
 /* Kernel TSS. */

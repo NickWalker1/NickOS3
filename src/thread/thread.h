@@ -22,7 +22,7 @@ typedef struct thread_control_block
 
     void *user_stack;
     void *page_directory;
-    void *heap;
+    void *heap; //CHANGE TO POOL INSTEAD??
 
     // uint32_t current_cpu_usage;
     // uint32_t last_cpu_usage;

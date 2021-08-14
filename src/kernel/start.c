@@ -24,14 +24,20 @@ void main(){
     gdt_init();
     
 
-    paging_init((void*) usableMemoryRegions[0]->Base);
+    paging_init();
     println("Paging intialised");
 
     //Initialise IDT
     idt_init();
     println("Initialised IDT.");
 
+    void* test1=malloc(1000);
+    *(uint32_t*)test1=30;
 
+    void* test2=malloc(5000);
+    *(uint32_t*)test1=23141;
+
+    
     //Hold
     while(1);
 

@@ -105,7 +105,7 @@ typedef struct pool
     int ring; /* permission level 0=kernel 3=user*/
     int next_free_page_index; /* Index of next free page */
     void* heap_base_pointer; /* Base pointer to start of the heap */
-    virt_page virtual_pages[MAX_PHYS_PAGES/2]; /* Both kernel and user processes get 2048 pages to allocate from. The base address of the first page will also be the base address of the first MemorySegmentHeader for the heap */
+    virt_page virtual_pages[512]; /* Each pool gets 512 max pages to allocate from */
 
 } pool;
 
@@ -114,15 +114,15 @@ extern pool* kernel_pool;
 extern pool* user_pool;
 //page_table_entry *kernel_ptables;
 
+void paging_init();
 void setupAvailablePages(uint8_t MRC, MemoryMapEntry** mRegions);
-void paging_init(void* dynamic_phys_base);
 void kernel_mapping_init();
-void init_pool(uint8_t flags);
+void* init_pool(uint8_t flags);
 void palloc_init();
-void* palloc(int num_pages, uint8_t flags);
+void* palloc_heap(int num_pages, pool* mem_pool, uint8_t flags);
 void* get_next_free_physical_page();
 void map_page(void* paddr, void* vaddr, uint8_t flags);
 bool unmap_page(void* vaddr, uint8_t flags);
-void init_heap_page(uint8_t flags);
+void init_heap_page(pool* pl,uint8_t flags);
 void clear_identity_pages();
 void* lookup_phys(void* vaddr, bool dump);
