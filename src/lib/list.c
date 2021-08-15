@@ -16,6 +16,7 @@ list* list_init(void* data){
     new_list->tail=new_list->head=(list_elem*) malloc(sizeof(list_elem));
     
     new_list->head->data=data;
+    new_list->size=1;
     return new_list;
 }
 
@@ -24,6 +25,7 @@ void* pop(list* l){
     l->head=elem->next;
     l->head->prev=0;
     void* data=elem->data;
+    l->size--;
     free(elem);
     return data;
 }
@@ -34,6 +36,7 @@ void push(list* l, void* data){
     elem->next=l->head;
     l->head->prev=elem;
     l->head=elem;
+    l->size++;
 }
 
 void append(list* l, void* data){
@@ -42,7 +45,7 @@ void append(list* l, void* data){
     elem->prev=l->tail;
     l->tail->next=elem;
     l->tail=elem;
-
+    l->size++;
 }
 
 
