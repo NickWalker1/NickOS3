@@ -109,7 +109,8 @@ typedef struct pool
 
 } pool;
 
-extern page_directory_entry *kernel_pd;
+extern page_directory_entry* kernel_pd;
+extern page_directory_entry* base_pd;
 extern pool* kernel_pool;
 extern pool* user_pool;
 //page_table_entry *kernel_ptables;
@@ -120,6 +121,7 @@ void kernel_mapping_init();
 void* init_pool(uint8_t flags);
 void palloc_init();
 void* palloc_heap(int num_pages, pool* mem_pool, uint8_t flags);
+void* palloc_kern(int num_pages, uint8_t flags);
 void* get_next_free_physical_page();
 void map_page(void* paddr, void* vaddr, uint8_t flags);
 bool unmap_page(void* vaddr, uint8_t flags);

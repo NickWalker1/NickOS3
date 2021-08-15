@@ -1,15 +1,13 @@
 #include "paging.h"
 
 
-page_directory_entry *kernel_pd;
 pool* kernel_pool;
 pool* user_pool;
 int pagecount;
 
 
 page_directory_entry *kernel_pd = (page_directory_entry*)PAGE_DIRECTORY_BASE;
-
-
+page_directory_entry* base_pd;
 
 
 phys_page physical_page_entries[MAX_PHYS_PAGES];
@@ -34,21 +32,6 @@ void paging_init(){
 
     init_heap_page(kernel_pool,F_KERN);
 
-    
-   // testFunc();
-    
-    // init_heap_page(,F_KERN);
-    //init_heap_page(!F_KERN);
-}
-
-/* random test function */
-void testFunc(){
-    void* paddr = get_next_free_physical_page();
-    void* vaddr = 0x4000;
-    map_page(paddr,vaddr,F_VERBOSE | F_KERN);
-
-    *(uint32_t*)vaddr=5;
-    println(itoa(*(uint32_t*)vaddr,str,BASE_DEC));
 }
 
 /* clears the first 6 identity pages used for converting to paging */
@@ -98,8 +81,43 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
         void* phys_addr= i*4096;
         map_page(phys_addr,Kptov(phys_addr),F_KERN);
     }
+
+    //setup base_pd for processes to copy from.
+    base_pd=palloc_kern(1,F_ZERO);
+    memcpy(base_pd,kernel_pd,PGSIZE);
+    
 }
 
+/* Basic function to allocate some pages in kernel virtual address space */
+void* palloc_kern(int num_pages, uint8_t flags){
+
+    void* return_addr=0;
+
+    for(int i=0;i<num_pages;i++){
+        void* paddr=get_next_free_physical_page();
+
+        if(paddr==NO_ADDR){
+            if(flags & F_ASSERT) PANIC("UNABLE TO ALLOCATE REQUIRED PAGES");
+            //unable to allocate more pages
+            return NO_ADDR;
+        }
+
+        void* vaddr=Kptov(paddr);
+
+        map_page(paddr,vaddr,flags);
+        
+        
+        //ensure returned pointer points to start of the pages.
+        if(i==0) return_addr=vaddr;
+        
+    }
+
+    if(flags&F_ZERO){
+        memset(return_addr,0,num_pages*PGSIZE);
+    }
+
+    return return_addr;
+}
 
 
 
@@ -109,6 +127,7 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
  * Returns virtual base address of next page allocated 
  * given the number of pages to allocate and a flags variable.
  * Will return NO_ADDR if unable ot allocate memory.
+ * TODO Change args to not require mem_pool, it will just get it from TCB
  */
 void* palloc_heap(int num_pages,pool* mem_pool, uint8_t flags){
 

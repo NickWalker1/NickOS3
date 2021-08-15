@@ -20,4 +20,6 @@ page_tables         0xC1100000 (grows upwards)
 
 TODO:
 * add default kernel pd then each process can be given a copy of this then add to it.
+* synchronisation locks for syscalls
+* syscalls
 * processes
