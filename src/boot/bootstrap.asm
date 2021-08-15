@@ -33,7 +33,9 @@ BEGIN_PM:
     call enable_paging
 
     ; Set new stack with virtual address
-    mov eax, 0xC1100000
+    ; starts right beneath where the code is loaded, and right after the page directory.
+    ; 0xC0007000-0xC0008000 will store the page for the kernel thread
+    mov eax, 0xC0008000 
     mov esp, eax
 
     ; Init FPU

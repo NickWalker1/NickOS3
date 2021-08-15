@@ -18,8 +18,8 @@ struct list_elem{
     list_elem* prev;
 };
 
-list* new_list();
-list* new_list(void* data);
+list* list_init();
+list* list_init_with(void* data);
 
 void append(list* l, void* data);
 void push(list* l, void* data);

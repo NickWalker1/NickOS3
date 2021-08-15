@@ -22,6 +22,7 @@ INPUT
     paging/paging.o
     paging/pagedir.o
     heap/heap.o
+    thread/thread.o
 
 )
 

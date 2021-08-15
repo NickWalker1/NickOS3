@@ -82,8 +82,14 @@ void setupAvailablePages(uint8_t UsableMemoryRegionCount, MemoryMapEntry** usabl
         map_page(phys_addr,Kptov(phys_addr),F_KERN);
     }
 
+    //map and reserve video memory space
+    i=0xb8000/PGSIZE;
+    physical_page_entries[i].type=M_RESERVED;
+    void* phys_addr= i*4096;
+    map_page(phys_addr,Kptov(phys_addr),F_KERN);
+
     //setup base_pd for processes to copy from.
-    base_pd=palloc_kern(1,F_ZERO);
+    base_pd=palloc_kern(1,F_ZERO | F_ASSERT);
     memcpy(base_pd,kernel_pd,PGSIZE);
     
 }

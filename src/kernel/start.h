@@ -9,6 +9,7 @@
 #include "../paging/paging.h"
 #include "../gdt/gdt.h"
 #include "../heap/heap.h"
+#include "../thread/thread.h"
 
 
 extern uint8_t MemoryRegionCount;

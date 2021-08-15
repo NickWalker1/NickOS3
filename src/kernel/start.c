@@ -31,13 +31,8 @@ void main(){
     idt_init();
     println("Initialised IDT.");
 
-    void* test1=malloc(1000);
-    *(uint32_t*)test1=30;
+    // __asm__ volatile("int $3");
 
-    void* test2=malloc(5000);
-    *(uint32_t*)test1=23141;
-
-    
     //Hold
     while(1);
 

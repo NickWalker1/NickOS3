@@ -10,7 +10,7 @@ list* list_init(){
 }
 
 /* Returns pointer to a new list with one element given */
-list* list_init(void* data){
+list* list_init_with(void* data){
     list* new_list = (list*) malloc(sizeof(list));
     new_list->size=1;
     new_list->tail=new_list->head=(list_elem*) malloc(sizeof(list_elem));

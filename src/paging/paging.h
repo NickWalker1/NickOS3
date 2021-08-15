@@ -18,6 +18,10 @@
 // |---------------|------------|------------|-------------|--------------------------------------|
 // {     Page 0       }{1}{2}{3}{        Page 4       }{     Page 5     }{       Page 6 - n       }
 
+//OUT OF DATE
+//Currently alloc 32 pages for kernel.
+//PD Base at different point
+//Stack also located differently
 
 //PAGE TABLES SHIT NOT USED, ONLY USING PD ADDR, PAGE TABLES INSTEAD ALLOCATED IN DYNAMIC AREA AS REQUIRED
 
