@@ -1,12 +1,13 @@
 # NickOS3
 32-bit basic OS
 
-Now with paging! (WIP)
+Now with paging!
 
 Physical Memory Locations:
 #idt_base           0x1000 //now just in kernel static memory
 memory_map          0x5000 
-boot_sect_base      0x7c00
+kernel_pd           0x6000
+kernel TCB          0x7000
 bootloader_entry    0x8000 //Kernel also directly after this
 
 vga_text_base       0x000b8000
@@ -14,12 +15,10 @@ vga_text_base       0x000b8000
 # Virtual Addresses
 kernel_base         0xC0000000
 kernel_page_dir     0xC0006000
-kernel_stacks       0xC1100000 (grows downwards remember)
-page_tables         0xC1100000 (grows upwards)
 
 
 TODO:
-* add default kernel pd then each process can be given a copy of this then add to it.
-* synchronisation locks for syscalls
-* syscalls
-* processes
+* finish synchronisation stuff
+* PIC
+* PIT
+* finish basic threading implementation

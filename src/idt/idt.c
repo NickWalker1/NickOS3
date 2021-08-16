@@ -213,6 +213,30 @@ void idt_init(){
     __asm__ volatile("sti"); //Set interrupt flag
 
 }
+void int_set_level(int level){
+    if(level)int_enable();
+}
+
+int int_get_level(){
+    uint32_t flags;
+
+    __asm__ volatile("pushfl; pop %0" : "=g" (flags));
+    return flags & 0x200 ? 1 : 0;
+}
+
+/* enables interrupts and returns previous status */
+int int_enable(){
+    int level = int_get_level();
+    __asm__ volatile("sti");
+    return level;
+}
+
+/* disables interrupts and returns previous status */
+int int_disable(){
+    int level = int_get_level();
+    __asm__ volatile("cli");
+    return level;
+}
 
 void page_fault_handler(exception_state *state){
     //TODO make swap pages

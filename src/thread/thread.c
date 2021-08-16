@@ -5,20 +5,21 @@ static thread* kernel_thread=(thread*) K_THREAD_BASE; /* Main kernel and initial
 static thread* idle_thread; /* Just spins */
 
 //Declare some useful data structures 
-//TODO change these to doubly linked lists probably or queues at least idk
-static thread*   all_threads[MAX_THREADS];
-static thread* ready_threads[MAX_THREADS];
+//TODO  proper address space shit between threads
+static list*   all_threads;
+static list* ready_threads;
 
-// really shitty solution, need to sort out static queue thing.
-static int num_waiting;
 static int ready_idx;
 
 static int tick_count;
 
 static num_threads=0;
 
+static int_level;
+
 /* Changes the current running code into the main kernel thread. */
 void thread_init(){
+
     kernel_thread = (thread*) K_THREAD_BASE;
 
     if(kernel_thread!=current_thread()) PANIC("stack in wrong place");
@@ -31,10 +32,11 @@ void thread_init(){
     kernel_thread->priority=1;
     kernel_thread->status=TS_RUNNING;
     kernel_thread->stack=get_esp(); //Goes to top of page and works downwards.
+    
 
+    all_threads=list_init_with(kernel_thread);
+    ready_threads=list_init_with(kernel_thread);
 
-    num_waiting=0;
-    ready_idx=0;
 
 }
 
@@ -55,14 +57,50 @@ void thread_yield(){
 
 
     //TODO disable interrupts
+    int_level=int_disable();
     t->status=TS_READY;
 
     //appending to ready threads
-    ready_threads[num_waiting++]=t;
+    append(ready_threads,t);
+
     schedule();
+    //renable intterupts to previous level
+    int_set(int_level);
 }
 
 void schedule(){}
+
+void thread_block(){
+    if(int_get_level()) PANIC("Cannot block without interrupts off");
+
+    current_thread()->status=TS_BLOCKED; 
+    schedule();
+    /* this is fine as when something is scheduled 
+     * it is popped from the ready queue, 
+     * so simply marking it as blocked and scheduling
+     * something else will in effect block the thread
+     */
+}
+
+void thread_unblock(thread* t){
+    if(!is_thread(t)) PANIC("NOT THREAD");
+    if(t->status!=TS_BLOCKED) PANIC("UNBLOCKING NON-BLOCKED Thread");
+
+    int level=int_disable();
+    
+    append(ready_threads,t);
+    t->stack=TS_READY;
+    
+    int_set(level);
+
+}
+
+
+//-----------------------HELPERS--------------------------------
+
+bool is_thread(thread* t){
+    return t->magic==T_MAGIC;
+}
 
 /* Returns address stored in cr3 register */
 void* get_pd(){

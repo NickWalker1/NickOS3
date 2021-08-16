@@ -1,9 +1,10 @@
 #pragma once
 
 #include "../lib/typedefs.h"
+#include "../lib/list.h"
 #include "../idt/cpu_state.h"
 #include "../paging/paging.h"
-
+#include "../idt/idt.h"
 /*
         4 kB +---------------------------------+
              |          kernel stack           |
@@ -86,9 +87,12 @@ void thread_init();
 void thead_tick();
 thread* current_thread();
 void thread_block();
-void thread_unblock();
+void thread_unblock(thread* t);
+void schedule();
+
 
 //Helper functions
+bool is_thread(thread* t);
 void* get_esp();
 void* get_pd();
 void set_pd(void* pd);

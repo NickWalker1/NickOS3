@@ -93,3 +93,8 @@ extern uint32_t idt_int47();
 
 // Software interrupts
 extern uint32_t idt_int50();
+
+int int_get_level();
+int int_enable();
+int int_disable();
+void int_set(int level);
