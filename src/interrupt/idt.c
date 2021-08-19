@@ -207,13 +207,37 @@ void idt_init(){
     // Software interrupts
     idt_set_descriptor(50, idt_int50, true);
 
-    //Remap PIC interrupts so to not cause doublefault constantly
     irq_remap();
 
     __asm__ volatile("lidt %0" : : "memory"(idtr)); //load the new IDT
     __asm__ volatile("sti"); //Set interrupt flag
 
 }
+
+
+/* Normally, IRQs 0 to 7 are mapped to entries 8 to 15. This
+*  is a problem in protected mode, because IDT entry 8 is a
+*  Double Fault! Without remapping, every time IRQ0 fires,
+*  you get a Double Fault Exception, which is NOT actually
+*  what's happening. We send commands to the Programmable
+*  Interrupt Controller (PICs - also called the 8259's) in
+*  order to make IRQ0 to 15 be remapped to IDT entries 32 to
+*  47 */
+void irq_remap(void)
+{
+    outportb(0x20, 0x11);
+    outportb(0xA0, 0x11);
+    outportb(0x21, 0x20);
+    outportb(0xA1, 0x28);
+    outportb(0x21, 0x04);
+    outportb(0xA1, 0x02);
+    outportb(0x21, 0x01);
+    outportb(0xA1, 0x01);
+    outportb(0x21, 0x0);
+    outportb(0xA1, 0x0);
+}
+
+
 void int_set_level(int level){
     if(level)int_enable();
 }
@@ -244,12 +268,12 @@ void page_fault_handler(exception_state *state){
 
 }
 
-void idt_global_int_handler(exception_state *state){
-    
-    /* If the IDT entry that was invoked was greater than 40
+void idt_global_int_handler(interrupt_state *state){
+    if(state->interrupt_number==32) timer_handler(state);
+        /* If the IDT entry that was invoked was greater than 40
     *  (meaning IRQ8 - 15), then we need to send an EOI to
     *  the slave controller */
-    if (state->interrupt_number>= 40)
+    if (state->interrupt_number >= 40)
     {
         outportb(0xA0, 0x20);
     }
@@ -257,12 +281,6 @@ void idt_global_int_handler(exception_state *state){
     /* In either case, we need to send an EOI to the master
     *  interrupt controller too */
     outportb(0x20, 0x20);
-    
-    println("HANDLED INTERRUPT");
-
-    state_dump(state);
-    __asm__ volatile("cli;hlt");
-    while(1);
 }
 
 void idt_global_exc_handler(exception_state *state){
@@ -283,29 +301,7 @@ void idt_global_exc_handler(exception_state *state){
     print(" : ");
     print(itoa(code,str,BASE_BIN));
     */
-
-
-/* Normally, IRQs 0 to 7 are mapped to entries 8 to 15. This
-*  is a problem in protected mode, because IDT entry 8 is a
-*  Double Fault! Without remapping, every time IRQ0 fires,
-*  you get a Double Fault Exception, which is NOT actually
-*  what's happening. We send commands to the Programmable
-*  Interrupt Controller (PICs - also called the 8259's) in
-*  order to make IRQ0 to 15 be remapped to IDT entries 32 to
-*  47 */
-void irq_remap(void)
-{
-    outportb(0x20, 0x11);
-    outportb(0xA0, 0x11);
-    outportb(0x21, 0x20);
-    outportb(0xA1, 0x28);
-    outportb(0x21, 0x04);
-    outportb(0xA1, 0x02);
-    outportb(0x21, 0x01);
-    outportb(0xA1, 0x01);
-    outportb(0x21, 0x0);
-    outportb(0xA1, 0x0);
-}    
+    
 
 void state_dump(exception_state *state){
     char str[128];

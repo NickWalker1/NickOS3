@@ -27,11 +27,12 @@ void main(){
     paging_init();
     println("Paging intialised");
 
+
     //Initialise IDT
     idt_init();
     println("Initialised IDT.");
 
-    // __asm__ volatile("int $3");
+    
 
     //Hold
     while(1);

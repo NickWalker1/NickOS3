@@ -5,11 +5,11 @@
 #include "../lib/smap.h"
 #include "../lib/string.h"
 #include "../lib/panic.h"
+#include "../lib/timer.h"
 #include "../idt/idt.h"
 #include "../paging/paging.h"
 #include "../gdt/gdt.h"
 #include "../heap/heap.h"
-#include "../thread/thread.h"
 
 
 extern uint8_t MemoryRegionCount;
