@@ -68,8 +68,48 @@ void thread_yield(){
     int_set(int_level);
 }
 
-void schedule(){}
 
+void schedule_tail(thread* t){
+    //TODO if thread is dying kill it and dealloc page
+
+
+    t->status=TS_READY;
+    append(ready_threads,t);
+
+}
+
+void schedule(){
+    thread* curr = current_thread();
+    thread* next = get_next_thread();
+    thread* prev = 0;
+
+    if(curr->status==TS_RUNNING) PANIC("current process is still running");
+
+    if(curr!=next){
+        prev=context_switch(curr,next)->curr;
+    }
+
+
+    //update new thread details
+    curr->status=TS_RUNNING;
+    tick_count=0;
+
+    //TODO change PD if changing process owner 
+    
+    //schedule the old thread back into ready queue
+    schedule_tail(prev);
+
+}
+
+
+thread* get_next_thread(){
+    //aquire ready queue lock
+    //super basic round robin approach
+    if(isEmpty(ready_threads)){
+        return idle_thread;
+    }
+    return pop(ready_threads);
+}
 void thread_block(){
     if(int_get_level()) PANIC("Cannot block without interrupts off");
 

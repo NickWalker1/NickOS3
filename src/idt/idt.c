@@ -245,9 +245,9 @@ void page_fault_handler(exception_state *state){
 
 void idt_global_int_handler(exception_state *state){
     println("HANDLED INTERRUPT");
-        state_dump(state);
-        __asm__ volatile("cli;hlt");
-        while(1);
+    state_dump(state);
+    __asm__ volatile("cli;hlt");
+    while(1);
 }
 
 void idt_global_exc_handler(exception_state *state){

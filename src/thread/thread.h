@@ -1,10 +1,14 @@
 #pragma once
 
+#include "tswitch.h"
+
 #include "../lib/typedefs.h"
 #include "../lib/list.h"
+#include "../lib/panic.h"
 #include "../idt/cpu_state.h"
 #include "../paging/paging.h"
 #include "../idt/idt.h"
+
 /*
         4 kB +---------------------------------+
              |          kernel stack           |
@@ -60,12 +64,13 @@ typedef enum thread_status
  * can be killed before any more damage is done. */
 typedef struct thread
 {
+    void *stack; /* just easy so offset is 0 */
+
     t_id id;
     char name[16];
 
     thread_status status;
 
-    void *stack;
     void *page_directory;
     void *pool; //was heap before
 
