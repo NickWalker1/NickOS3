@@ -1,138 +1,5 @@
 #include "idt.h"
-#include "../lib/screen.h"
-#include "cpu_state.h"
-#include "../lib/int.h"
 
-static exception_definition exceptions[] =
-    {
-        {
-            .interrupt_number = 0,
-            .description = "Divide-by-zero error",
-        },
-        {
-            .interrupt_number = 1,
-            .description = "Debug",
-        },
-        {
-            .interrupt_number = 2,
-            .description = "Non-maskable Interrupt",
-        },
-        {
-            .interrupt_number = 3,
-            .description = "Breakpoint",
-        },
-        {
-            .interrupt_number = 4,
-            .description = "Overflow",
-        },
-        {
-            .interrupt_number = 5,
-            .description = "Bound Range Exceeded",
-        },
-        {
-            .interrupt_number = 6,
-            .description = "Invalid Opcode",
-        },
-        {
-            .interrupt_number = 7,
-            .description = "Device Not Available",
-        },
-        {
-            .interrupt_number = 8,
-            .description = "Double Fault",
-        },
-        {
-            .interrupt_number = 9,
-            .description = "Coprocessor Segment Overrun",
-        },
-        {
-            .interrupt_number = 10,
-            .description = "Invalid TSS",
-        },
-        {
-            .interrupt_number = 11,
-            .description = "Segment Not Present",
-        },
-        {
-            .interrupt_number = 12,
-            .description = "Stack-Segment Fault",
-        },
-        {
-            .interrupt_number = 13,
-            .description = "General Protection Fault",
-        },
-        {
-            .interrupt_number = 14,
-            .description = "Page Fault",
-        },
-        {
-            .interrupt_number = 15,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 16,
-            .description = "x87 Floating-Point Exception",
-        },
-        {
-            .interrupt_number = 17,
-            .description = "Alignment Check",
-        },
-        {
-            .interrupt_number = 18,
-            .description = "Machine Check",
-        },
-        {
-            .interrupt_number = 19,
-            .description = "SIMD Floating-Point Exception",
-        },
-        {
-            .interrupt_number = 20,
-            .description = "Virtualization Exception",
-        },
-        {
-            .interrupt_number = 21,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 22,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 23,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 24,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 25,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 26,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 27,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 28,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 29,
-            .description = "Reserved",
-        },
-        {
-            .interrupt_number = 30,
-            .description = "Security Exception",
-        },
-        {
-            .interrupt_number = 31,
-            .description = "Reserved",
-        }};
 
 
 void idt_set_descriptor(uint8_t vector, uint32_t (*handler)(interrupt_state *state), bool user_interrupt){
@@ -268,7 +135,7 @@ void page_fault_handler(exception_state *state){
 
 }
 
-void idt_global_int_handler(interrupt_state *state){
+void idt_global_int_wrapper(interrupt_state *state){
     if(state->interrupt_number==32) timer_handler(state);
         /* If the IDT entry that was invoked was greater than 40
     *  (meaning IRQ8 - 15), then we need to send an EOI to
@@ -283,14 +150,11 @@ void idt_global_int_handler(interrupt_state *state){
     outportb(0x20, 0x20);
 }
 
-void idt_global_exc_handler(exception_state *state){
-    println("EXCEPTION: ");
-    if(state->interrupt_number==8){
-        println("DOUBLE FAULT");
-        __asm__ volatile("cli;hlt");
-    }
-    state_dump(state);
-    __asm__ volatile("cli;hlt");
+void idt_global_exc_wrapper(exception_state *state){
+    default_exception_handler(state);
+
+    // state_dump(state);
+    // __asm__ volatile("cli;hlt");
 }
 
     /*

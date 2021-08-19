@@ -6,7 +6,7 @@
 #include "../lib/string.h"
 #include "../lib/panic.h"
 #include "../lib/timer.h"
-#include "../idt/idt.h"
+#include "../interrupt/idt.h"
 #include "../paging/paging.h"
 #include "../gdt/gdt.h"
 #include "../heap/heap.h"

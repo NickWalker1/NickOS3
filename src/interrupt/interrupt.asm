@@ -1,5 +1,5 @@
-extern idt_global_exc_handler
-extern idt_global_int_handler
+extern idt_global_exc_wrapper
+extern idt_global_int_wrapper
 
 ; Global declarations for idt_exc
 %macro global_idt_exc 1
@@ -89,7 +89,7 @@ idt_exc_wrapper:
   
   push esp
 
-  call idt_global_exc_handler
+  call idt_global_exc_wrapper
 
   pop esp
   add esp, 48
@@ -123,7 +123,7 @@ idt_int_wrapper:
   push esp
 
   ; Process interrupt
-  call idt_global_int_handler
+  call idt_global_int_wrapper
 
   ; Restore original stack pointer
   pop esp

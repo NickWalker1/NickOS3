@@ -33,7 +33,6 @@ void main(){
     println("Initialised IDT.");
 
     
-
     //Hold
     while(1);
 

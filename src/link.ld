@@ -17,8 +17,9 @@ INPUT
     lib/panic.o
     lib/timer.o
     kernel/start.o
-    idt/idt.o
-    idt/interrupt.o
+    interrupt/idt.o
+    interrupt/handlers.o
+    interrupt/interrupt.o
     gdt/gdt.o
     paging/paging.o
     paging/pagedir.o
