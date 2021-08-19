@@ -48,5 +48,7 @@ void append(list* l, void* data){
     l->size++;
 }
 
-
+bool is_empty(list* l){
+    return l->size==0;
+}
 

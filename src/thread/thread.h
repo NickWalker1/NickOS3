@@ -5,9 +5,9 @@
 #include "../lib/typedefs.h"
 #include "../lib/list.h"
 #include "../lib/panic.h"
-#include "../idt/cpu_state.h"
+#include "../interrupt/cpu_state.h"
+#include "../interrupt/idt.h"
 #include "../paging/paging.h"
-#include "../idt/idt.h"
 
 /*
         4 kB +---------------------------------+

@@ -25,3 +25,4 @@ void append(list* l, void* data);
 void push(list* l, void* data);
 void* pop(list* l);
 int get_size(list* l);
+bool is_empty(list* l);
