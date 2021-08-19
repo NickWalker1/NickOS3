@@ -95,3 +95,9 @@ void cond_init(condition* cond){
 }
 
 //TODO Implement cond wait
+
+void cond_wait(condition* c, lock* l){}
+
+void cond_signal(condition* c, lock* l){}
+
+void cond_broadcast(condition* c, lock* l){}

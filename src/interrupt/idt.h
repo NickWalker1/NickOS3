@@ -8,6 +8,8 @@
 #include "../lib/timer.h"
 #include "../lib/typedefs.h"
 
+#include "../thread/thread.h"
+
 #define IDT_MAX_DESCRIPTORS 256
 
 typedef struct idt_entry

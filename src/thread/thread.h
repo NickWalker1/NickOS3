@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tswitch.h"
+#include "synch.h"
 
 #include "../lib/typedefs.h"
 #include "../lib/list.h"
@@ -87,14 +88,16 @@ typedef struct thread
 
 } thread;
 
+typedef void thread_func(void* aux);
 
 void thread_init();
 void thead_tick();
+thread* thread_create();
 thread* current_thread();
 void thread_block();
 void thread_unblock(thread* t);
 void schedule();
-
+void idle();
 
 //Helper functions
 bool is_thread(thread* t);

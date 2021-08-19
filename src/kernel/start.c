@@ -32,10 +32,19 @@ void main(){
     idt_init();
     println("Initialised IDT.");
 
-    
+    // timer_phase();
+
     //Hold
     while(1);
 
+}
+
+void timer_phase(int hz)
+{
+    int divisor = 1193180 / hz;       /* Calculate our divisor */
+    outportb(0x43, 0x36);             /* Set our command byte 0x36 */
+    outportb(0x40, divisor & 0xFF);   /* Set low byte of divisor */
+    outportb(0x40, divisor >> 8);     /* Set high byte of divisor */
 }
 
 void clear_bss(){

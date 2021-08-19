@@ -9,13 +9,10 @@ static thread* idle_thread; /* Just spins */
 static list*   all_threads;
 static list* ready_threads;
 
-static int ready_idx;
 
 static int tick_count;
 
 static num_threads=0;
-
-static int_level;
 
 /* Changes the current running code into the main kernel thread. */
 void thread_init(){
@@ -40,6 +37,36 @@ void thread_init(){
 
 }
 
+/* allocates a page in kernel space for this thread and sets
+ * some basic info in thread struct and returns 
+ */
+thread* thread_create(char* name, int priority, thread_func* func, void* aux){
+    thread* this= (thread*) palloc_kern(1,F_ASSERT | F_KERN | F_ZERO);
+    this->id=create_id();
+    this->magic=T_MAGIC;
+    this->page_directory=get_pd();
+    this->pool=kernel_pool;
+    this->priority=1;
+    this->stack=((void*)this)+PGSIZE; /* initialise to top of page */
+    this->status=TS_BLOCKED;
+
+    int int_level = int_disable();
+
+    //TODO alloc frames for stack entries for context switching
+    // to right place (complicated af)
+
+
+    int_set(int_level);
+
+    //Add to all threads list
+    append(all_threads,this);
+
+    /* add to ready queue */
+    thread_unblock(this);
+
+    return this;
+}
+
 /* called by PIT interrupt handler */
 void thread_tick(){
     //TODO get thread to do some analytics n shit
@@ -57,7 +84,7 @@ void thread_yield(){
 
 
     //TODO disable interrupts
-    int_level=int_disable();
+    int int_level=int_disable();
     t->status=TS_READY;
 
     //appending to ready threads
@@ -71,7 +98,6 @@ void thread_yield(){
 
 void schedule_tail(thread* t){
     //TODO if thread is dying kill it and dealloc page
-
 
     t->status=TS_READY;
     append(ready_threads,t);
@@ -101,7 +127,6 @@ void schedule(){
 
 }
 
-
 thread* get_next_thread(){
     //aquire ready queue lock
     //super basic round robin approach
@@ -110,6 +135,32 @@ thread* get_next_thread(){
     }
     return pop(ready_threads);
 }
+
+/* function run by idle thread */
+void idle(semaphore* idle_started){
+    idle_thread=current_thread();
+    sema_up(idle_started);
+    for(;;){
+        /* Let someone else run. */
+        intr_disable ();
+        thread_block ();
+
+        /* Re-enable interrupts and wait for the next one.
+
+            The `sti' instruction disables interrupts until the
+            completion of the next instruction, so these two
+            instructions are executed atomically.  This atomicity is
+            important; otherwise, an interrupt could be handled
+            between re-enabling interrupts and waiting for the next
+            one to occur, wasting as much as one clock tick worth of
+            time.
+
+            See [IA32-v2a] "HLT", [IA32-v2b] "STI", and [IA32-v3a]
+            7.11.1 "HLT Instruction". */
+        asm volatile ("sti; hlt" : : : "memory");
+    }
+}
+
 void thread_block(){
     if(int_get_level()) PANIC("Cannot block without interrupts off");
 
