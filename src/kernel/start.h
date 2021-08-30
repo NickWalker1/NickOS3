@@ -6,6 +6,7 @@
 #include "../lib/string.h"
 #include "../lib/panic.h"
 #include "../lib/timer.h"
+#include "../thread/thread.h"
 #include "../interrupt/idt.h"
 #include "../paging/paging.h"
 #include "../gdt/gdt.h"
@@ -18,4 +19,5 @@ extern int UsableMemoryRegionCount;
 
 
 void main();
+void boot();
 void clear_bss();

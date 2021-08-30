@@ -1,4 +1,5 @@
-%include "switch.h"
+curr_offset equ 20
+next_offset equ 24
 
 global context_switch
 ; context* context_switch(context *old, context *new);
@@ -6,6 +7,8 @@ global context_switch
 ;
 context_switch:
     ; Save old callee-save registers
+    ; No need to store eax-edx as they are handled 
+    ; by the interrupt trap gate
     push  ebp
     push  ebx
     push  esi

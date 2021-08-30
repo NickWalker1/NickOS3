@@ -38,7 +38,7 @@ void sema_up(semaphore* s){
     if(s==NULL) PANIC("NULL semaphore");
 
     //to ensure no raceconditions as cannot context switch
-    itr_level=int_disable;
+    itr_level=int_disable();
     if(!is_empty(s->waiters)){
         thread_unblock(pop(s->waiters));
     }

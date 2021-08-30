@@ -4,6 +4,10 @@
 #include "int.h"
 
 char str[128];
+static struct pos position;
+
+static int attempt_stack[128];
+static int stack_idx=0;
 
 //Gets the screen offset for a given location
 int get_screen_offset(int col, int row){
@@ -29,9 +33,8 @@ int get_cursor(){
 }
 
 struct pos get_position(int offset){
-    struct pos position;
     offset/=2;
-    int row=offset%2;
+    int row=offset%25;
     int col=offset-(row*80);
     position.row=row;
     position.col=col;
@@ -146,6 +149,26 @@ void print(char* message){
 void println(char* message){
     print("\n");
     print(message);
+}
+
+
+void print_attempt(char* message){
+    println("[    ] ");
+    print(message);
+    push_row();
+}
+
+void print_ok(){
+    print_char_loc('O',2,get_position(get_cursor()).row,GREEN_ON_BLACK);
+    print_char_loc('K',3,pop_row(),GREEN_ON_BLACK);
+
+}
+
+void push_row(){
+    attempt_stack[stack_idx++]=(get_cursor()/2)%80;
+}
+int pop_row(){
+    return attempt_stack[stack_idx--];
 }
 
 void clear_screen(){

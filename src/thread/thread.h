@@ -1,50 +1,6 @@
 #pragma once
 
-#include "tswitch.h"
-#include "synch.h"
-
 #include "../lib/typedefs.h"
-#include "../lib/list.h"
-#include "../lib/panic.h"
-#include "../interrupt/cpu_state.h"
-#include "../interrupt/idt.h"
-#include "../paging/paging.h"
-
-/*
-        4 kB +---------------------------------+
-             |          kernel stack           |
-             |                |                |
-             |                |                |
-             |                V                |
-             |         grows downward          |
-             |                                 |
-             |                                 |
-             |                                 |
-             |                                 |
-             |                                 |
-             |                                 |
-             |                                 |
-             |                                 |
-             +---------------------------------+
-             |              magic              |
-             |                :                |
-             |                :                |
-             |               name              |
-             |              status             |
-        0 kB +---------------------------------+
-
-*/
-
-#define T_MAGIC 0x69696969
-
-#define MAX_THREADS 64
-
-//so that this page ends right before the kernel code is loaded to
-#define K_THREAD_BASE 0xC0007000
-
-#define TIME_SLICE 4
-
-/* number of ticks since last yield */
 
 typedef uint32_t t_id;
 
@@ -55,6 +11,8 @@ typedef enum thread_status
     TS_BLOCKED,
     TS_DYING
 } thread_status;
+
+
 
 /* Also known as Thread/Process Control Block.
  * This is stored at the bottom of a 4k Page.
@@ -86,20 +44,70 @@ typedef struct thread
 
     uint32_t magic;
 
-} thread;
+}thread;
+
+#include "tswitch.h"
+#include "synch.h"
+
+#include "../lib/list.h"
+#include "../lib/panic.h"
+#include "../interrupt/cpu_state.h"
+#include "../interrupt/idt.h"
+#include "../paging/paging.h"
+
+/*
+        4 kB +---------------------------------+
+             |          kernel stack           |
+             |                |                |
+             |                |                |
+             |                V                |
+             |         grows downward          |
+             |                                 |
+             |                                 |
+             |                                 |
+             |                                 |
+             |                                 |
+             |                                 |
+             |                                 |
+             |                                 |
+             +---------------------------------+
+             |              magic              |
+             |                :                |
+             |                :                |
+             |               name              |
+             |              status             |
+             |               stack             |
+        0 kB +---------------------------------+
+
+*/
+
+#define T_MAGIC 0x69696969
+
+#define MAX_THREADS 64
+
+//so that this page ends right before the kernel code is loaded to
+#define K_THREAD_BASE 0xC0007000
+
+#define TIME_SLICE 4
+
+/* number of ticks since last yield */
+
 
 typedef void thread_func(void* aux);
 
 void thread_init();
-void thead_tick();
+void thread_tick();
 thread* thread_create();
 thread* current_thread();
 void thread_block();
 void thread_unblock(thread* t);
 void schedule();
 void idle();
+void thread_yield();
+thread* get_next_thread();
 
 //Helper functions
+uint32_t push_stack(uint32_t size);
 bool is_thread(thread* t);
 void* get_esp();
 void* get_pd();

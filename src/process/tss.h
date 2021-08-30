@@ -45,7 +45,7 @@
    description of the TSS.  See [IA32-v3a] 5.12.1 "Exception- or
    Interrupt-Handler Procedures" for a description of when and
    how stack switching occurs during an interrupt. */
-struct tss
+typedef struct tss
   {
     uint16_t back_link, :16;
     void *esp0;                         /* Ring 0 stack virtual address. */
@@ -67,11 +67,10 @@ struct tss
     uint16_t gs, :16;
     uint16_t ldt, :16;
     uint16_t trace,IOPB;
-  };
+  }tss;
 
-/* Kernel TSS. */
-static struct tss *tss;
 
 void tss_init();
 struct tss* tss_get();
 void tss_update();
+tss* get_kernel_tss();

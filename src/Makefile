@@ -1,5 +1,5 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c lib/*.c interrupt/*.c paging/*.c gdt/*.c heap/*.c )
-HEADERS   = $(wildcard kernel/*.h drivers/*.h lib/*.h interrupt/*.h paging/*.h gdt/*.h heap/*.h )
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c lib/*.c interrupt/*.c paging/*.c gdt/*.c heap/*.c thread/*.c process/*.c)
+HEADERS   = $(wildcard kernel/*.h drivers/*.h lib/*.h interrupt/*.h paging/*.h gdt/*.h heap/*.h thread/*.h process/*.h)
 
 OBJ=${C_SOURCES:.c=.o}
 
@@ -19,7 +19,7 @@ run: all
 os-image: boot/mbr.bin kernel.bin
 	cat $^ > os-image
 
-kernel.bin: boot/bootstrap.o ${OBJ} interrupt/interrupt.o
+kernel.bin: boot/bootstrap.o ${OBJ} interrupt/interrupt.o thread/tswitch.o
 	$(LD)  -T "link.ld"
 
 

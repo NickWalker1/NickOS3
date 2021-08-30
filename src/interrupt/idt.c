@@ -105,7 +105,7 @@ void irq_remap(void)
 }
 
 
-void int_set_level(int level){
+void int_set(int level){
     if(level)int_enable();
 }
 
@@ -136,7 +136,7 @@ void page_fault_handler(exception_state *state){
 }
 
 void idt_global_int_wrapper(interrupt_state *state){
-    if(state->interrupt_number==32) thead_tick();
+    if(state->interrupt_number==32) timer_handler(state);
         /* If the IDT entry that was invoked was greater than 40
     *  (meaning IRQ8 - 15), then we need to send an EOI to
     *  the slave controller */

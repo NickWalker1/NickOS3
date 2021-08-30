@@ -1,5 +1,6 @@
 #pragma once
 #include "../lib/typedefs.h"
+#include "../process/tss.h"
 
 #define GDT_SIZE 6
 
@@ -34,3 +35,4 @@ typedef struct gdt_entry
 
 void gdt_init();
 void gdt_fill_entry(int index, bool executable, uint8_t privilege_level);
+void gdt_add_tss(int index, bool executable, uint8_t privilege_level);

@@ -1,7 +1,8 @@
 #pragma once
 
+#include "thread.h"
+
 #include "../lib/typedefs.h"
-#include "../thread/thread.h"
 
 //TODO UPDATE THIS
 // Saved registers for kernel context switches.

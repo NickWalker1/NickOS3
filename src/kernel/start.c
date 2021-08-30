@@ -6,37 +6,49 @@ void main(){
     //clear_screen();
     println("Kernel Mode.");
 
-    clear_bss();
-    println("BSS cleared.");
-
-    println("Memory Region Count:");
-    print(itoa(MemoryRegionCount,str, BASE_DEC));
-
-    //Detect usable Memory Regions
-    MemoryMapEntry** usableMemoryRegions = getUsableMemoryRegions(MemoryRegionCount);
-    println("Usable Memory Region Count:");
-    print(itoa(UsableMemoryRegionCount,str,BASE_DEC));
-
-    setupAvailablePages(UsableMemoryRegionCount, usableMemoryRegions);
-    println("Number of dynamic pages available:");
-    print(itoa(pagecount,str,BASE_DEC));
+    boot();
     
-    gdt_init();
-    
-
-    paging_init();
-    println("Paging intialised");
-
-
-    //Initialise IDT
-    idt_init();
-    println("Initialised IDT.");
 
     // timer_phase();
+    println(itoa((uint32_t)get_esp(),str,BASE_HEX));
+    push_stack(0x10);
+    println(itoa((uint32_t)get_esp(),str,BASE_HEX));
 
     //Hold
     while(1);
 
+}
+/* Setups up kernel */
+void boot(){
+    print_attempt("Clearing BSS.");
+    clear_bss();
+    print_ok();
+
+    print_attempt("Memory Regions Check:");
+    MemoryMapEntry** usableMemoryRegions = getUsableMemoryRegions(MemoryRegionCount);
+    if(UsableMemoryRegionCount<1)
+        PANIC("MEMORY REGION COUNT FAIL");
+
+    setupAvailablePages(UsableMemoryRegionCount, usableMemoryRegions);
+    if(pagecount<1)
+        PANIC("NO AVAILABLE PAGES");
+
+    
+    print_ok();
+
+    print_attempt("GDT init");
+    gdt_init();
+    print_ok();
+    
+
+    print_attempt("Paging init");
+    paging_init();
+    print_ok();
+
+
+    print_attempt("IDT init");
+    idt_init();
+    print_ok();
 }
 
 void timer_phase(int hz)

@@ -16,6 +16,7 @@ INPUT
     lib/string.o
     lib/panic.o
     lib/timer.o
+    lib/list.o
     kernel/start.o
     interrupt/idt.o
     interrupt/handlers.o
@@ -24,6 +25,10 @@ INPUT
     paging/paging.o
     paging/pagedir.o
     heap/heap.o
+    thread/thread.o
+    thread/synch.o
+    thread/tswitch.o
+    process/tss.o
     
 
 

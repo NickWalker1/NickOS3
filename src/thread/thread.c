@@ -12,7 +12,7 @@ static list* ready_threads;
 
 static int tick_count;
 
-static num_threads=0;
+static int num_threads=0;
 
 /* Changes the current running code into the main kernel thread. */
 void thread_init(){
@@ -105,6 +105,8 @@ void schedule_tail(thread* t){
 }
 
 void schedule(){
+    //TODO FIX THIS BADLY
+    //NOT RIGHT ARGS FOR context_switch 
     thread* curr = current_thread();
     thread* next = get_next_thread();
     thread* prev = 0;
@@ -130,7 +132,7 @@ void schedule(){
 thread* get_next_thread(){
     //aquire ready queue lock
     //super basic round robin approach
-    if(isEmpty(ready_threads)){
+    if(is_empty(ready_threads)){
         return idle_thread;
     }
     return pop(ready_threads);
@@ -142,7 +144,7 @@ void idle(semaphore* idle_started){
     sema_up(idle_started);
     for(;;){
         /* Let someone else run. */
-        intr_disable ();
+        int_disable ();
         thread_block ();
 
         /* Re-enable interrupts and wait for the next one.
@@ -189,6 +191,22 @@ void thread_unblock(thread* t){
 
 //-----------------------HELPERS--------------------------------
 
+/* Pushes esp pointer size bytes forward and returns the previous
+ * value to be used to store the data from that point 
+ * MUST BE CALLED WITH INTERUPTS DISABLED
+ */
+
+uint32_t push_stack(uint32_t size){
+    /* disable interrupts so to not let context switch get in between of those two 
+    asm statements otherwise weird bad stuff will happen */
+    /*
+    uint32_t* base_addr;
+    __asm__ volatile("mov %%esp, %0" : "=g"(base_addr));
+    
+    __asm__ volatile("add %%esp %0" : : "r"(size));//TODO THIS IS WRONG
+    */
+}
+
 bool is_thread(thread* t){
     return t->magic==T_MAGIC;
 }
@@ -226,7 +244,7 @@ uint32_t* get_base_page(uint32_t* addr){
     uint32_t remainder = (uint32_t)addr % PGSIZE;
     uint32_t base = (uint32_t)addr;
 
-    return (uint32_t)base-remainder;
+    return (uint32_t)(base-remainder);
 }
 
 /* Gets the contents of the current thread and prints it */

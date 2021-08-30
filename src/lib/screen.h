@@ -8,6 +8,7 @@
 
 #define WHITE_ON_BLACK 0x0f
 #define WHITE_ON_BLUE  0x1f
+#define GREEN_ON_BLACK 0x0a
 
 
 //Screen device IO ports
@@ -32,5 +33,8 @@ void print_char_loc(char character, int col, int row, char attribute_type);
 void print_at(char* message, int col, int row);
 void print(char* message);
 void println(char* message);
+void print_attempt(char* message);
+void print_ok();
+void print_fail();
 void clear_screen();
 void test_colours();
