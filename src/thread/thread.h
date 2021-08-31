@@ -107,7 +107,6 @@ void thread_yield();
 thread* get_next_thread();
 
 //Helper functions
-uint32_t push_stack(uint32_t size);
 bool is_thread(thread* t);
 void* get_esp();
 void* get_pd();

@@ -191,21 +191,6 @@ void thread_unblock(thread* t){
 
 //-----------------------HELPERS--------------------------------
 
-/* Pushes esp pointer size bytes forward and returns the previous
- * value to be used to store the data from that point 
- * MUST BE CALLED WITH INTERUPTS DISABLED
- */
-
-uint32_t push_stack(uint32_t size){
-    /* disable interrupts so to not let context switch get in between of those two 
-    asm statements otherwise weird bad stuff will happen */
-    /*
-    uint32_t* base_addr;
-    __asm__ volatile("mov %%esp, %0" : "=g"(base_addr));
-    
-    __asm__ volatile("add %%esp %0" : : "r"(size));//TODO THIS IS WRONG
-    */
-}
 
 bool is_thread(thread* t){
     return t->magic==T_MAGIC;

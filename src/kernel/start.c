@@ -8,12 +8,6 @@ void main(){
 
     boot();
     
-
-    // timer_phase();
-    println(itoa((uint32_t)get_esp(),str,BASE_HEX));
-    push_stack(0x10);
-    println(itoa((uint32_t)get_esp(),str,BASE_HEX));
-
     //Hold
     while(1);
 
