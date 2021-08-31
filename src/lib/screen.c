@@ -1,13 +1,10 @@
 #include "screen.h"
-#include "../drivers/low_level.h"
-#include "memory.h"
-#include "int.h"
 
 char str[128];
 static struct pos position;
 
 static int attempt_stack[128];
-static int stack_idx=0;
+int stack_idx=0;
 
 //Gets the screen offset for a given location
 int get_screen_offset(int col, int row){
@@ -15,7 +12,7 @@ int get_screen_offset(int col, int row){
 }
 
 //Get cursor
-int get_cursor(){
+uint16_t get_cursor(){
     //The device uses its control regiser as an index
     // to select its internal registers, of which we are
     //interested in:
@@ -23,10 +20,11 @@ int get_cursor(){
     //  reg 15: low byte of cursors offset
     //Once they have been selected we can read or write a 
     //byte on the data register.
-    port_byte_out(REG_SCREEN_CTRL,14);
-    int offset = port_byte_in(REG_SCREEN_DATA) << 8; //as it's the high bit
+    int offset=0;
     port_byte_out(REG_SCREEN_CTRL,15);
-    offset+= port_byte_in(REG_SCREEN_DATA);
+    offset |= port_byte_in(REG_SCREEN_DATA);
+    port_byte_out(REG_SCREEN_CTRL,14);
+    offset |= ((uint16_t) port_byte_in(REG_SCREEN_DATA)) << 8; //as it's the high bit
     //since the cursor offset is the number of characters 
     //we multiply it by 2 to get char cell offset
     return offset*2;
@@ -154,21 +152,24 @@ void println(char* message){
 
 void print_attempt(char* message){
     println("[    ] ");
-    print(message);
     push_row();
+    print(message);
 }
 
 void print_ok(){
-    print_char_loc('O',2,get_position(get_cursor()).row,GREEN_ON_BLACK);
-    print_char_loc('K',3,pop_row(),GREEN_ON_BLACK);
+    int row=pop_row();
+    print_char_loc('O',2,row,GREEN_ON_BLACK);
+    print_char_loc('K',3,row,GREEN_ON_BLACK);
 
 }
 
 void push_row(){
-    attempt_stack[stack_idx++]=(get_cursor()/2)%80;
+    attempt_stack[stack_idx]=get_cursor()/(2*MAX_COLS);
+    stack_idx++;
 }
 int pop_row(){
-    return attempt_stack[stack_idx--];
+    stack_idx--;
+    return attempt_stack[stack_idx];
 }
 
 void clear_screen(){

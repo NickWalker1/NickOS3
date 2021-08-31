@@ -45,9 +45,13 @@ initProtMode:
     ;mov ebp, 0x90000        ; Update the stack pointer so it is right
     ;mov esp,ebp             ; at the top of the free space
 
-    ;mov al, 0xff
-    ;out 0xa1, al
-    ;out 0x21, al
+    ;call disablePic
 
     jmp BEGIN_PM            ; call some well-known label
 
+
+disablePic:
+    mov al, 0xff
+    out 0xa1, al
+    out 0x21, al
+    ret

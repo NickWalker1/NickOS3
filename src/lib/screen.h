@@ -1,6 +1,9 @@
 #pragma once
 
 #include "int.h"
+#include "../drivers/low_level.h"
+#include "memory.h"
+#include "typedefs.h"
 
 #define VIDEO_ADDRESS 0xb8000
 #define MAX_ROWS 25
@@ -9,6 +12,7 @@
 #define WHITE_ON_BLACK 0x0f
 #define WHITE_ON_BLUE  0x1f
 #define GREEN_ON_BLACK 0x0a
+#define RED_ON_BLACK   0x06
 
 
 //Screen device IO ports
@@ -25,7 +29,7 @@ struct pos{
 
 
 int get_screen_offset(int col, int row);
-int get_cursor();
+uint16_t get_cursor();
 struct pos get_position(int offset);
 void set_cursor(int offset);
 int handle_scrolling(int offset);
