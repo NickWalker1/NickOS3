@@ -12,7 +12,7 @@
 #define WHITE_ON_BLACK 0x0f
 #define WHITE_ON_BLUE  0x1f
 #define GREEN_ON_BLACK 0x0a
-#define RED_ON_BLACK   0x06
+#define RED_ON_BLACK   0x0c
 
 
 //Screen device IO ports

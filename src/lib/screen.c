@@ -163,6 +163,15 @@ void print_ok(){
 
 }
 
+void print_fail(){
+    int row=pop_row();
+    print_char_loc('F',1,row,RED_ON_BLACK);
+    print_char_loc('A',2,row,RED_ON_BLACK);
+    print_char_loc('I',3,row,RED_ON_BLACK);
+    print_char_loc('L',4,row,RED_ON_BLACK);
+
+}
+
 void push_row(){
     attempt_stack[stack_idx]=get_cursor()/(2*MAX_COLS);
     stack_idx++;
