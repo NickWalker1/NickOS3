@@ -2,11 +2,11 @@ curr_offset equ 20
 next_offset equ 24
 
 global context_switch
-; context* context_switch(context *old, context *new);
+; thread* context_switch(thread *cur, thread *next);
 ; pushes registers 
 ;
 context_switch:
-    ; Save old callee-save registers
+    ; Save old callee-preserved registers
     ; No need to store eax-edx as they are handled 
     ; by the interrupt trap gate
     push  ebp
@@ -26,7 +26,7 @@ context_switch:
     mov esp, [ecx+edx*1]
 
 
-    ; Load new callee-save registers
+    ; Load new callee-preserved registers
     pop  edi
     pop  esi
     pop  ebx
@@ -36,5 +36,16 @@ context_switch:
 
 
 
+first_switch:
+    add esp, 8 ; get rid of switch thread arguments
+    
+    extern schedule_tail
 
+    push eax ; TODO figure out why this is needed
+    call schedule_tail
+
+    add esp,4
+
+    ;start thread properly
+    ret
 

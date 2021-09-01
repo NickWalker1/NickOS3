@@ -52,3 +52,17 @@ bool is_empty(list* l){
     return l->size==0;
 }
 
+bool remove(list* l, void* data){
+    list_elem* elem=l->head;
+    while(elem->data!=data && elem->next!=NULL){
+        elem=elem->next;
+    }
+    if(elem->data==data){
+        elem->prev->next=elem->next;
+        elem->next->prev=elem->prev;
+        free(elem);
+        return true;
+    }
+    return false;
+
+}

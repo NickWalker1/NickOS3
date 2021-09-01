@@ -18,7 +18,6 @@ kernel_page_dir     0xC0006000
 
 
 TODO:
-* finish synchronisation stuff
-* PIC
-* PIT
-* finish basic threading implementation
+* sort out TSS
+* bug fix
+* clean up code

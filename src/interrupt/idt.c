@@ -77,7 +77,7 @@ void idt_init(){
     irq_remap();
 
     __asm__ volatile("lidt %0" : : "memory"(idtr)); //load the new IDT
-    __asm__ volatile("sti"); //Set interrupt flag
+    // __asm__ volatile("sti"); //Set interrupt flag
 
 }
 

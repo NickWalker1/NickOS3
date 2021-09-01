@@ -4,6 +4,8 @@
 
 typedef uint32_t t_id;
 
+typedef void thread_func(void* aux);
+
 typedef enum thread_status
 {
     TS_READY,
@@ -45,6 +47,31 @@ typedef struct thread
     uint32_t magic;
 
 }thread;
+
+typedef struct runframe
+{
+    void* eip;              //Return addr
+    thread_func* function;  //Function to run
+    void* aux;              //function arguments
+} runframe;
+
+typedef struct context_switch_stack 
+  {
+    uint32_t edi;               /*  0: Saved %edi. */
+    uint32_t esi;               /*  4: Saved %esi. */
+    uint32_t ebp;               /*  8: Saved %ebp. */
+    uint32_t ebx;               /* 12: Saved %ebx. */
+    void (*eip) (void);         /* 16: Return address. */
+    struct thread *cur;         /* 20: switch_threads()'s CUR argument. */
+    struct thread *next;        /* 24: switch_threads()'s NEXT argument. */
+  } context_switch_stack;
+
+
+/* Stack frame for switch_entry(). */
+typedef struct switch_entry_stack
+  {
+    void (*eip) (void);
+  }switch_entry_stack;
 
 #include "tswitch.h"
 #include "synch.h"
@@ -93,7 +120,6 @@ typedef struct thread
 /* number of ticks since last yield */
 
 
-typedef void thread_func(void* aux);
 
 void thread_init();
 void thread_tick();
@@ -102,11 +128,14 @@ thread* current_thread();
 void thread_block();
 void thread_unblock(thread* t);
 void schedule();
+static void run(thread_func* function, void* aux);
 void idle();
 void thread_yield();
 thread* get_next_thread();
+void thread_kill();
 
 //Helper functions
+void* push_stack(thread* t, int size);
 bool is_thread(thread* t);
 void* get_esp();
 void* get_pd();

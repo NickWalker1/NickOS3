@@ -6,4 +6,4 @@
 
 
 uint32_t timer_handler(interrupt_state* s);
-
+void time_tick();

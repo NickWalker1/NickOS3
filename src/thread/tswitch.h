@@ -4,6 +4,7 @@
 
 #include "../lib/typedefs.h"
 
+/*
 //TODO UPDATE THIS
 // Saved registers for kernel context switches.
 // Don't need to save all the segment registers (%cs, etc),
@@ -24,12 +25,14 @@ typedef struct context {
     thread* curr;
     thread* next;
 }context;
-
+*/
 /* Defined in tswitch.asm. It pushes the save regsiters onto the stack, uses the 
  * context structs to store the current esp in the current threads struct,
  * then uses the next structs into to load the stack value and pop the save registers */
-context* context_switch(context* cur, context* next);
+// context* context_switch(context* cur, context* next);
 
+thread* context_switch(thread* cur, thread* next);
 
-#define curr_offset 20
-#define next_offset 24
+void first_switch();
+#define curr_offset 0
+#define next_offset 4

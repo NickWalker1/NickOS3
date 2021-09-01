@@ -14,9 +14,12 @@ static int tick_count;
 
 static int num_threads=0;
 
-/* Changes the current running code into the main kernel thread. */
+/* Changes the current running code into the main kernel thread.
+    and creates idle thread.*/
 void thread_init(){
-
+    int_disable(); //should already be disabled but yeah
+    //TODO change pit interrupt handler to thread tick handler from default
+    // but currently just tick handler.
     kernel_thread = (thread*) K_THREAD_BASE;
 
     if(kernel_thread!=current_thread()) PANIC("stack in wrong place");
@@ -34,6 +37,12 @@ void thread_init(){
     all_threads=list_init_with(kernel_thread);
     ready_threads=list_init_with(kernel_thread);
 
+    semaphore* init_started;
+    sema_init(init_started,0);
+    thread_create("idle thread",0,idle,&init_started);
+
+    int_enable();
+    sema_down(init_started);
 
 }
 
@@ -52,9 +61,18 @@ thread* thread_create(char* name, int priority, thread_func* func, void* aux){
 
     int int_level = int_disable();
 
-    //TODO alloc frames for stack entries for context switching
-    // to right place (complicated af)
+    //run stack frame
+    runframe* run_stack=(runframe*) push_stack(this,sizeof(runframe));
+    run_stack->eip=NULL;
+    run_stack->function=func;
+    run_stack->aux=aux;
 
+    switch_entry_stack* switch_stack=(switch_entry_stack*) push_stack(this,sizeof(switch_entry_stack));
+    switch_stack->eip=(void (*) (void)) run;
+
+    context_switch_stack* context_stack=(context_switch_stack*) push_stack(this,sizeof(context_stack));
+    context_stack->eip = first_switch;
+    context_stack->ebp = 0;
 
     int_set(int_level);
 
@@ -70,7 +88,7 @@ thread* thread_create(char* name, int priority, thread_func* func, void* aux){
 /* called by PIT interrupt handler */
 void thread_tick(){
     //TODO get thread to do some analytics n shit
-    
+    time_tick();
     /* preemption */
     if(++tick_count >= TIME_SLICE){
         thread_yield();
@@ -97,8 +115,8 @@ void thread_yield(){
 
 
 void schedule_tail(thread* t){
-    //TODO if thread is dying kill it and dealloc page
-
+    //TODO if thread is dying kill it 
+    if(t->status==TS_DYING) thread_kill(t);
     t->status=TS_READY;
     append(ready_threads,t);
 
@@ -107,6 +125,7 @@ void schedule_tail(thread* t){
 void schedule(){
     //TODO FIX THIS BADLY
     //NOT RIGHT ARGS FOR context_switch 
+
     thread* curr = current_thread();
     thread* next = get_next_thread();
     thread* prev = 0;
@@ -114,7 +133,7 @@ void schedule(){
     if(curr->status==TS_RUNNING) PANIC("current process is still running");
 
     if(curr!=next){
-        prev=context_switch(curr,next)->curr;
+        prev=context_switch(curr,next);
     }
 
 
@@ -188,8 +207,32 @@ void thread_unblock(thread* t){
 
 }
 
+void thread_kill(thread* t){
+    remove(all_threads,t);
+    remove(ready_threads,t);
+    //TODO FREE PAGE
+}
+
+static void run(thread_func* function, void* aux){
+    if(function==NULL) PANIC("NULL FUNCTION");
+
+    int_enable();
+    function(aux);
+    thread* t= current_thread();
+    t->status=TS_DYING;
+    
+    while(1); //wait to be killed :(
+}
+
 
 //-----------------------HELPERS--------------------------------
+
+
+void* push_stack(thread* t, int size){
+    if(!is_thread(t)) PANIC("pushing stack to non-thread");
+    t->stack-=size;
+    return t->stack;
+}
 
 
 bool is_thread(thread* t){
@@ -229,7 +272,7 @@ uint32_t* get_base_page(uint32_t* addr){
     uint32_t remainder = (uint32_t)addr % PGSIZE;
     uint32_t base = (uint32_t)addr;
 
-    return (uint32_t)(base-remainder);
+    return (uint32_t*)(base-remainder);
 }
 
 /* Gets the contents of the current thread and prints it */

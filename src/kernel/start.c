@@ -39,10 +39,14 @@ void boot(){
     paging_init();
     print_ok();
 
-
     print_attempt("IDT init");
     idt_init();
     print_ok();
+
+    print_attempt("Threading init");
+    thread_init();
+    print_ok();
+
 }
 
 void timer_phase(int hz)

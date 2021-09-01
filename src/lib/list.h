@@ -22,6 +22,7 @@ list* list_init();
 list* list_init_with(void* data);
 
 void append(list* l, void* data);
+bool remove(list* l, void* data);
 void push(list* l, void* data);
 void* pop(list* l);
 int get_size(list* l);

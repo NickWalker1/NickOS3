@@ -8,3 +8,10 @@ uint32_t timer_handler(interrupt_state* s){
         println("1 second");
     }
 }
+
+void time_tick(){
+    ticks++;
+    if(ticks%18==0){
+        println("1 second");
+    }
+}
