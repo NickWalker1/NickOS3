@@ -48,13 +48,13 @@ typedef struct thread
 
 }thread;
 
-__attribute__((packed));
+
 typedef struct runframe
 {
     void* eip;              //Return addr
     thread_func* function;  //Function to run
     void* aux;              //function arguments
-} runframe;
+} __attribute__((packed)) runframe;
 
 __attribute__((packed));
 typedef struct context_switch_stack 
@@ -66,15 +66,14 @@ typedef struct context_switch_stack
     void (*eip) (void);         /* 16: Return address. */
     thread *cur;         /* 20: switch_threads()'s CUR argument. */
     thread *next;        /* 24: switch_threads()'s NEXT argument. */
-  } context_switch_stack;
+  } __attribute__((packed)) context_switch_stack;
 
 
 /* Stack frame for switch_entry(). */
-__attribute__((packed));
 typedef struct switch_entry_stack
   {
     void (*eip) (void);
-  }switch_entry_stack;
+  }__attribute__((packed)) switch_entry_stack;
 
 #include "tswitch.h"
 #include "synch.h"
