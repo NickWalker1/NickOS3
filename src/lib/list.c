@@ -21,12 +21,13 @@ list* list_init_with(void* data){
 }
 
 void* pop(list* l){
+    if(is_empty(l)) return NULL;
     list_elem* elem = l->head;
     l->head=elem->next;
     l->head->prev=0;
     void* data=elem->data;
     l->size--;
-    free(elem);
+    // TODO fix : free(elem);
     return data;
 }
 
@@ -43,6 +44,7 @@ void append(list* l, void* data){
     list_elem* elem = (list_elem*) malloc(sizeof(list_elem));
     elem->data=data;
     elem->prev=l->tail;
+    if(is_empty(l)) l->head=elem;
     l->tail->next=elem;
     l->tail=elem;
     l->size++;

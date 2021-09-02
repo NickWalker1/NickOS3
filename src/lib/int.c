@@ -37,6 +37,16 @@ char* itoa(uint32_t num, char* str, int base){
     if(isNegative){
         str[i++]='-';
     }
+    
+    if(base==BASE_HEX){
+        str[i++]='x';
+        str[i++]='0';
+    }
+    if(base==BASE_BIN){
+        str[i++]='b';
+        str[i++]='0';
+    }
+    
     str[i]='\0';
 
     reverse(str,i);

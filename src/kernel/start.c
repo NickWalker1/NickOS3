@@ -27,14 +27,12 @@ void boot(){
     if(pagecount<1)
         PANIC("NO AVAILABLE PAGES");
 
-    
     print_ok();
 
     print_attempt("GDT init");
     gdt_init();
     print_ok();
     
-
     print_attempt("Paging init");
     paging_init();
     print_ok();
@@ -43,10 +41,12 @@ void boot(){
     idt_init();
     print_ok();
 
+    // int_disable();
+    
     print_attempt("Threading init");
     thread_init();
     print_ok();
-
+    
 }
 
 void timer_phase(int hz)

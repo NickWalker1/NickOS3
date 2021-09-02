@@ -1,6 +1,4 @@
 #include "panic.h"
-#include "screen.h"
-
 
 void PANIC(char* msg){
     //TODO add function to store CPU register data and print that
@@ -18,7 +16,17 @@ void PANIC(char* msg){
     println("System fucked");
     println(msg);
 
-    __asm__ volatile("cli;hlt");
+    halt();
+}
+
+void PANIC_EXC(char* msg, exception_state* state){
+    draw_panic_screen();
+    println("PANIC");
+    println("System fucked");
+    println(msg);
+
+    state_dump(state);
+    halt();
 }
 
 

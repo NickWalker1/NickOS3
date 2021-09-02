@@ -42,7 +42,7 @@ void gdt_fill_entry(int index, bool executable, uint8_t privilege_level)
 void gdt_add_tss(int index, bool executable, uint8_t privilege_level){
     gdt[index].limit_0_15 = 0x68;
     gdt[index].base_0_15 = (uint32_t)get_kernel_tss() & 0xFFFF;
-    gdt[index].base_16_23 = (uint32_t)get_kernel_tss() & 0xFF0000 >> 0xFFFF;
+    gdt[index].base_16_23 = ((uint32_t)get_kernel_tss() & 0xFF0000) >> 0xFFFF;
 
     gdt[index].accessed = 0;
     gdt[index].read_write = 1;

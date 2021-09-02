@@ -1,8 +1,8 @@
 [bits 16]
 
 printString16:
-    mov ah, 0x0e ; teletype mode
     pusha
+    mov ah, 0x0e ; teletype mode
 
 printChar:
     mov al, [bx]

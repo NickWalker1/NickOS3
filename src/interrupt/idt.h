@@ -45,7 +45,6 @@ void idt_init(void);
 void page_fault_handler(exception_state *state);
 void idt_global_int_wrapper(interrupt_state *state);
 void idt_global_exc_wrapper(exception_state *state);
-void state_dump(exception_state *state);
 
 //Exceptions
 extern uint32_t idt_exc0();

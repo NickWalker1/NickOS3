@@ -48,6 +48,7 @@ typedef struct thread
 
 }thread;
 
+__attribute__((packed));
 typedef struct runframe
 {
     void* eip;              //Return addr
@@ -55,6 +56,7 @@ typedef struct runframe
     void* aux;              //function arguments
 } runframe;
 
+__attribute__((packed));
 typedef struct context_switch_stack 
   {
     uint32_t edi;               /*  0: Saved %edi. */
@@ -62,12 +64,13 @@ typedef struct context_switch_stack
     uint32_t ebp;               /*  8: Saved %ebp. */
     uint32_t ebx;               /* 12: Saved %ebx. */
     void (*eip) (void);         /* 16: Return address. */
-    struct thread *cur;         /* 20: switch_threads()'s CUR argument. */
-    struct thread *next;        /* 24: switch_threads()'s NEXT argument. */
+    thread *cur;         /* 20: switch_threads()'s CUR argument. */
+    thread *next;        /* 24: switch_threads()'s NEXT argument. */
   } context_switch_stack;
 
 
 /* Stack frame for switch_entry(). */
+__attribute__((packed));
 typedef struct switch_entry_stack
   {
     void (*eip) (void);
@@ -128,6 +131,7 @@ thread* current_thread();
 void thread_block();
 void thread_unblock(thread* t);
 void schedule();
+void switch_complete(thread* prev);
 static void run(thread_func* function, void* aux);
 void idle();
 void thread_yield();
@@ -135,7 +139,7 @@ thread* get_next_thread();
 void thread_kill();
 
 //Helper functions
-void* push_stack(thread* t, int size);
+static void* push_stack(thread* t, uint32_t size);
 bool is_thread(thread* t);
 void* get_esp();
 void* get_pd();
@@ -143,4 +147,4 @@ void set_pd(void* pd);
 t_id create_id();
 bool check_magic();
 uint32_t* get_base_page(uint32_t* addr);
-void thead_dump();
+void thread_dump(thread* t);

@@ -22,7 +22,8 @@ void thread_init(){
     // but currently just tick handler.
     kernel_thread = (thread*) K_THREAD_BASE;
 
-    if(kernel_thread!=current_thread()) PANIC("stack in wrong place");
+    // if(kernel_thread!=current_thread()) PANIC("stack in wrong place");
+
 
     kernel_thread->magic=T_MAGIC;
     kernel_thread->id=create_id();
@@ -35,14 +36,17 @@ void thread_init(){
     
 
     all_threads=list_init_with(kernel_thread);
-    ready_threads=list_init_with(kernel_thread);
+    ready_threads=list_init();
 
-    semaphore* init_started;
-    sema_init(init_started,0);
-    thread_create("idle thread",0,idle,&init_started);
+
+    println(itoa(get_esp(),str,BASE_HEX));
+    semaphore init_started;
+    sema_init(&init_started,0);
+    thread* tmp=thread_create("idle thread",5,idle,&init_started);
+
 
     int_enable();
-    sema_down(init_started);
+    sema_down(&init_started);
 
 }
 
@@ -50,39 +54,60 @@ void thread_init(){
  * some basic info in thread struct and returns 
  */
 thread* thread_create(char* name, int priority, thread_func* func, void* aux){
-    thread* this= (thread*) palloc_kern(1,F_ASSERT | F_KERN | F_ZERO);
-    this->id=create_id();
-    this->magic=T_MAGIC;
-    this->page_directory=get_pd();
-    this->pool=kernel_pool;
-    this->priority=1;
-    this->stack=((void*)this)+PGSIZE; /* initialise to top of page */
-    this->status=TS_BLOCKED;
+    thread* new= (thread*) palloc_kern(1,F_ASSERT | F_KERN | F_ZERO |F_VERBOSE);
+    new->id=create_id();
+    new->magic=T_MAGIC;
+    new->page_directory=get_pd();
+    new->pool=kernel_pool;
+    new->priority=1;
+    new->stack=((uint32_t)new)+PGSIZE; /* initialise to top of page */
+    new->status=TS_BLOCKED;
 
     int int_level = int_disable();
 
+    //context for these next few stack pushes:
+    //on each function call a few things are pushed to the stack
+    //firstly: the address of the line to return to when the ret instruction
+    //is called, this is how nested calls work
+    //secondly: each of the function arguments
+    //thus each stack struct starts with the eip value of the function of which
+    //to 'return' to, but infact it has never been there before. Ha sneaky.
+
     //run stack frame
-    runframe* run_stack=(runframe*) push_stack(this,sizeof(runframe));
+    runframe* run_stack=(runframe*) push_stack(new,sizeof(runframe));/*sizeof(runframe)=24*/
     run_stack->eip=NULL;
     run_stack->function=func;
     run_stack->aux=aux;
 
-    switch_entry_stack* switch_stack=(switch_entry_stack*) push_stack(this,sizeof(switch_entry_stack));
+    //stack for first_switch function. All it does is push the eip of run to the stack so that when ret is
+    //called at the end of first_switch it will jump to the start of the run function.
+    switch_entry_stack* switch_stack=(switch_entry_stack*) push_stack(new,sizeof(switch_entry_stack));/*sizeof(switch_entry_stack)=8*/
     switch_stack->eip=(void (*) (void)) run;
 
-    context_switch_stack* context_stack=(context_switch_stack*) push_stack(this,sizeof(context_stack));
+    //stack contents for context_switch function
+    context_switch_stack* context_stack=(context_switch_stack*) push_stack(new,sizeof(context_switch_stack));/*sizeof(context_switch_stack)=40*/
     context_stack->eip = first_switch;
     context_stack->ebp = 0;
 
+    println("");
+    println(itoa(run_stack,str,BASE_HEX));
+    println(itoa(switch_stack,str,BASE_HEX));
+    println(itoa(context_stack,str,BASE_HEX));
+    println("");
+    println(itoa(run,str,BASE_HEX));
+    println(itoa(first_switch,str,BASE_HEX));
+    println(itoa((uint32_t)new->stack,str,BASE_HEX));
+
+    
     int_set(int_level);
 
     //Add to all threads list
-    append(all_threads,this);
+    append(all_threads,new);
 
     /* add to ready queue */
-    thread_unblock(this);
+    thread_unblock(new);
 
-    return this;
+    return new;
 }
 
 /* called by PIT interrupt handler */
@@ -114,37 +139,53 @@ void thread_yield(){
 }
 
 
-void schedule_tail(thread* t){
-    //TODO if thread is dying kill it 
-    if(t->status==TS_DYING) thread_kill(t);
-    t->status=TS_READY;
-    append(ready_threads,t);
+void switch_complete(thread* prev){
+    thread* curr = current_thread();
 
+    curr->status=TS_RUNNING;
+    tick_count=0;
+
+    //TODO update cr3 if required.
+
+    //TODO if thread is dying kill it 
+    if(prev->status==TS_DYING) thread_kill(prev);
+
+    // thread_dump(prev);
+    // thread_dump(current_thread());
+    uint32_t *esp = (uint32_t*)get_esp();
+    esp+=1;
+    println("esp:");
+    print(itoa(esp,str,BASE_HEX));
+    println("addr:");
+    print(itoa(*esp,str,BASE_HEX));
+}
+
+void printval(uint32_t val){
+    println(itoa(val,str,BASE_HEX));
 }
 
 void schedule(){
-    //TODO FIX THIS BADLY
-    //NOT RIGHT ARGS FOR context_switch 
-
     thread* curr = current_thread();
     thread* next = get_next_thread();
     thread* prev = 0;
 
     if(curr->status==TS_RUNNING) PANIC("current process is still running");
 
+    print_attempt("switching from: ");
+    print(itoa((uint32_t)curr->stack,str,BASE_HEX));
+    print(" to ");
+    print(itoa((uint32_t)next->stack,str,BASE_HEX));
+
     if(curr!=next){
         prev=context_switch(curr,next);
     }
-
+    print_ok();
 
     //update new thread details
-    curr->status=TS_RUNNING;
-    tick_count=0;
-
     //TODO change PD if changing process owner 
-    
+
     //schedule the old thread back into ready queue
-    schedule_tail(prev);
+    switch_complete(prev);
 
 }
 
@@ -154,12 +195,15 @@ thread* get_next_thread(){
     if(is_empty(ready_threads)){
         return idle_thread;
     }
-    return pop(ready_threads);
+    thread* t = (thread*)pop(ready_threads);
+    return t;
 }
 
 /* function run by idle thread */
 void idle(semaphore* idle_started){
     idle_thread=current_thread();
+    println("here");
+    thread_dump(current_thread());
     sema_up(idle_started);
     for(;;){
         /* Let someone else run. */
@@ -186,6 +230,7 @@ void thread_block(){
     if(int_get_level()) PANIC("Cannot block without interrupts off");
 
     current_thread()->status=TS_BLOCKED; 
+
     schedule();
     /* this is fine as when something is scheduled 
      * it is popped from the ready queue, 
@@ -201,8 +246,8 @@ void thread_unblock(thread* t){
     int level=int_disable();
     
     append(ready_threads,t);
-    t->stack=TS_READY;
-    
+    t->status=TS_READY;
+
     int_set(level);
 
 }
@@ -214,10 +259,13 @@ void thread_kill(thread* t){
 }
 
 static void run(thread_func* function, void* aux){
+    println("here");
+    halt();
     if(function==NULL) PANIC("NULL FUNCTION");
 
     int_enable();
     function(aux);
+
     thread* t= current_thread();
     t->status=TS_DYING;
     
@@ -228,7 +276,7 @@ static void run(thread_func* function, void* aux){
 //-----------------------HELPERS--------------------------------
 
 
-void* push_stack(thread* t, int size){
+static void* push_stack(thread* t, uint32_t size){
     if(!is_thread(t)) PANIC("pushing stack to non-thread");
     t->stack-=size;
     return t->stack;
@@ -276,8 +324,7 @@ uint32_t* get_base_page(uint32_t* addr){
 }
 
 /* Gets the contents of the current thread and prints it */
-void thread_dump(){
-    thread* t= current_thread();
+void thread_dump(thread* t){
     if(t==0) PANIC("NO CURRENT THREAD");
     
 
@@ -295,6 +342,6 @@ void thread_dump(){
     print(itoa((uint32_t)t->pool,str,BASE_HEX));
     println("Priority: ");
     print(itoa(t->priority,str,BASE_HEX));
-    println("Magic EXPECTED(0x69696969): ");
+    println("Magic: ");
     print(itoa(t->magic,str,BASE_HEX));
 }

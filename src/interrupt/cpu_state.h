@@ -67,3 +67,6 @@ typedef struct interrupt_state
     uint32_t esp;
     uint32_t ss;
 } interrupt_state;
+
+
+void state_dump(exception_state* state);

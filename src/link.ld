@@ -21,6 +21,7 @@ INPUT
     interrupt/idt.o
     interrupt/handlers.o
     interrupt/interrupt.o
+    interrupt/cpu_state.o
     gdt/gdt.o
     paging/paging.o
     paging/pagedir.o
