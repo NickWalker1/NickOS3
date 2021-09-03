@@ -41,37 +41,47 @@ OUTPUT
 )
 
 SECTIONS
-{
+{   
     . = KERNEL_PHYSICAL_ADDRESS;
+    BOOT_SECTION_START = .;
     .boot :
     {
         boot/bootstrap.o
     }
+    BOOT_SECTION_END = .;
+
 
     . +=KERNEL_VIRTUAL_ADDRESS;
 
+
+    TEXT_SECTION_START = .;  
 	.text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VIRTUAL_ADDRESS)
     {
         *(.text)
     }
+    TEXT_SECTION_END = .;
 
+
+    RODATA_SECTION_START = .;
 	.rodata ALIGN(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_ADDRESS)
     {
         *(.rodata)
     }
+    RODATA_SECTION_END = .;
 
+
+    DATA_SECTION_START = .;
 	.data ALIGN(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL_ADDRESS)
     {
         *(.data)
     }
+    DATA_SECTION_END = .;
 
 
     BSS_SECTION_START = .;
-
 	.bss ALIGN(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_ADDRESS)
     {
         *(.bss)
     }
-
     BSS_SECTION_END = .;
 }

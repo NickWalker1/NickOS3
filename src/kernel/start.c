@@ -6,8 +6,16 @@ void main(){
     //clear_screen();
     println("Kernel Mode.");
 
+    //printLinkerSections();
+
     boot();
     
+
+    //println("esp");
+    //print(itoa(get_esp(),str,BASE_HEX));
+    //asm("int $3");
+    // int x=5/0;
+
     //Hold
     while(1);
 
@@ -37,18 +45,57 @@ void boot(){
     paging_init();
     print_ok();
 
+
     print_attempt("IDT init");
     idt_init();
+    int_enable();
     print_ok();
 
+    //int x=6/0;
     // int_disable();
     
     print_attempt("Threading init");
     thread_init();
     print_ok();
     
+    
 }
 
+/*
+void printLinkerSections(){
+    extern uint32_t BOOT_SECTION_START;
+    extern uint32_t BOOT_SECTION_END;
+    extern uint32_t TEXT_SECTION_START;
+    extern uint32_t TEXT_SECTION_END;
+    extern uint32_t RODATA_SECTION_START;
+    extern uint32_t RODATA_SECTION_END;
+    extern uint32_t DATA_SECTION_START;
+    extern uint32_t DATA_SECTION_END;
+    extern uint32_t BSS_SECTION_START;
+    extern uint32_t BSS_SECTION_END;
+
+    println("BOOT: ");
+    print(itoa(BOOT_SECTION_START,str,BASE_HEX));
+    print(" to ");
+    print(itoa(BOOT_SECTION_END ,str,BASE_HEX));
+    println("TEXT: ");
+    print(itoa(TEXT_SECTION_START,str,BASE_HEX));
+    print(" to ");
+    print(itoa(TEXT_SECTION_END,str,BASE_HEX));
+    println("RODATA: ");
+    print(itoa(RODATA_SECTION_START,str,BASE_HEX));
+    print(" to ");
+    print(itoa(RODATA_SECTION_END,str,BASE_HEX));
+    println("DATA: ");
+    print(itoa(DATA_SECTION_START,str,BASE_HEX));
+    print(" to ");
+    print(itoa(DATA_SECTION_END,str,BASE_HEX));
+    println("BSS: ");
+    print(itoa(BSS_SECTION_START,str,BASE_HEX));
+    print(" to ");
+    print(itoa(BSS_SECTION_END,str,BASE_HEX));
+}
+*/
 void timer_phase(int hz)
 {
     int divisor = 1193180 / hz;       /* Calculate our divisor */

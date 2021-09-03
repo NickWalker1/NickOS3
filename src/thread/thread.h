@@ -54,26 +54,25 @@ typedef struct runframe
     void* eip;              //Return addr
     thread_func* function;  //Function to run
     void* aux;              //function arguments
-} __attribute__((packed)) runframe;
+} __attribute__((packed, aligned(4))) runframe;
 
-__attribute__((packed));
 typedef struct context_switch_stack 
   {
-    uint32_t edi;               /*  0: Saved %edi. */
-    uint32_t esi;               /*  4: Saved %esi. */
-    uint32_t ebp;               /*  8: Saved %ebp. */
-    uint32_t ebx;               /* 12: Saved %ebx. */
+    uint32_t edi;               /*  0: Saved edi. */
+    uint32_t esi;               /*  4: Saved esi. */
+    uint32_t ebp;               /*  8: Saved ebp. */
+    uint32_t ebx;               /* 12: Saved ebx. */
     void (*eip) (void);         /* 16: Return address. */
-    thread *cur;         /* 20: switch_threads()'s CUR argument. */
-    thread *next;        /* 24: switch_threads()'s NEXT argument. */
-  } __attribute__((packed)) context_switch_stack;
+    thread *cur;         /* 20: context_switch()'s CUR argument. */
+    thread *next;        /* 24: context_switch()'s NEXT argument. */
+  } __attribute__((packed, aligned(4))) context_switch_stack;
 
 
 /* Stack frame for switch_entry(). */
 typedef struct switch_entry_stack
   {
     void (*eip) (void);
-  }__attribute__((packed)) switch_entry_stack;
+  }__attribute__((packed, aligned(4))) switch_entry_stack;
 
 #include "tswitch.h"
 #include "synch.h"

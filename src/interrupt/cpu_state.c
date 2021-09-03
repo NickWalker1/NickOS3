@@ -1,4 +1,5 @@
 #include "cpu_state.h"
+#include "../thread/thread.h"
 
 
 void state_dump(exception_state *state){
@@ -39,4 +40,21 @@ void state_dump(exception_state *state){
     println("SS:");
     print(itoa(state->ss,str,BASE_HEX));
 
+    halt();
+}
+
+void interrupt_state_dump(interrupt_state* state){
+    println("INTERRUPT CORE DUMP");
+    println("INT_NUM:");
+    print(itoa(state->interrupt_number,str,BASE_DEC));
+    println("EIP:");
+    print(itoa(state->eip,str,BASE_HEX));
+    println("CS:");
+    print(itoa(state->cs,str,BASE_HEX));
+    println("EFLAGS:");
+    print(itoa(state->eflags,str,BASE_BIN));
+    println("ESP:");
+    print(itoa(state->esp,str,BASE_HEX));
+    println("SS:");
+    print(itoa(state->ss,str,BASE_HEX));
 }

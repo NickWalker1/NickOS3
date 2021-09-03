@@ -24,7 +24,8 @@ void PANIC_EXC(char* msg, exception_state* state){
     println("PANIC");
     println("System fucked");
     println(msg);
-
+    //TODO
+    // println("todo, state dump causes triple fault??");
     state_dump(state);
     halt();
 }

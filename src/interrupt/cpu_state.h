@@ -28,6 +28,11 @@ typedef struct registers_state
     uint32_t eax;
 } registers_state;
 
+/* worth noting that both exception_state and interrupt_state 
+ * both include ss and esp at the end and these values
+ * will only be filled if the interrupt occurs when in 
+ * userspace. Which is determined by where in gdt or something?
+ */
 typedef struct exception_state
 {
     uint64_t idtr;
@@ -70,3 +75,4 @@ typedef struct interrupt_state
 
 
 void state_dump(exception_state* state);
+void interrupt_state_dump(interrupt_state* state);

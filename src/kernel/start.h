@@ -21,3 +21,4 @@ extern int UsableMemoryRegionCount;
 void main();
 void boot();
 void clear_bss();
+void printLinkerSections();

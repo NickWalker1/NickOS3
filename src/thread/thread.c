@@ -89,10 +89,20 @@ thread* thread_create(char* name, int priority, thread_func* func, void* aux){
     context_stack->eip = first_switch;
     context_stack->ebp = 0;
 
+    println("new->stack");
+    println(itoa(new->stack,str,BASE_HEX));
     println("");
+    println("runstack");
     println(itoa(run_stack,str,BASE_HEX));
+    println(itoa(sizeof(runframe),str,BASE_HEX));
+    println("");
+    println("switch_stack");
     println(itoa(switch_stack,str,BASE_HEX));
+    println(itoa(sizeof(switch_entry_stack),str,BASE_HEX));
+    println("");
+    println("context_stack");
     println(itoa(context_stack,str,BASE_HEX));
+    println(itoa(sizeof(context_switch_stack),str,BASE_HEX));
     println("");
     println(itoa(run,str,BASE_HEX));
     println(itoa(first_switch,str,BASE_HEX));
@@ -152,12 +162,14 @@ void switch_complete(thread* prev){
 
     // thread_dump(prev);
     // thread_dump(current_thread());
+    /*
     uint32_t *esp = (uint32_t*)get_esp();
     esp+=1;
     println("esp:");
     print(itoa(esp,str,BASE_HEX));
     println("addr:");
     print(itoa(*esp,str,BASE_HEX));
+    */
 }
 
 void printval(uint32_t val){

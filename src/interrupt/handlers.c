@@ -3,6 +3,7 @@
 static exception_definition exceptions[];
 
 void default_exception_handler(exception_state* state){
+
     PANIC_EXC(exceptions[state->interrupt_number].description,state);
 }
 
