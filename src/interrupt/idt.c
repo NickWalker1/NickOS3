@@ -138,7 +138,7 @@ void page_fault_handler(exception_state *state){
 void idt_global_int_wrapper(interrupt_state *state){
     // interrupt_state_dump(state);
     // halt();
-    if(state->interrupt_number==32) timer_handler(state);
+    if(state->interrupt_number==32) thread_tick();
         /* If the IDT entry that was invoked was greater than 40
     *  (meaning IRQ8 - 15), then we need to send an EOI to
     *  the slave controller */

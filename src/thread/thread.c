@@ -46,9 +46,11 @@ void thread_init(){
 
 
     int_enable();
-    sema_down(&init_started);
+    sema_down(&init_started); //when sema_down is called the thread will
+    //block and schedule the next thread. This next thread will be
+    // the idle thread as the last thing thread_create does is unblocks
+    // the thread by changing the state and adding it to the ready queue
 
-    println("FUCK YES");
 }
 
 /* allocates a page in kernel space for this thread and sets
@@ -89,26 +91,6 @@ thread* thread_create(char* name, int priority, thread_func* func, void* aux){
     context_switch_stack* context_stack=(context_switch_stack*) push_stack(new,sizeof(context_switch_stack));/*sizeof(context_switch_stack)=40*/
     context_stack->eip = first_switch;
     context_stack->ebp = 0;
-
-    println("new->stack");
-    println(itoa(new->stack,str,BASE_HEX));
-    println("");
-    println("runstack");
-    println(itoa(run_stack,str,BASE_HEX));
-    println(itoa(sizeof(runframe),str,BASE_HEX));
-    println("");
-    println("switch_stack");
-    println(itoa(switch_stack,str,BASE_HEX));
-    println(itoa(sizeof(switch_entry_stack),str,BASE_HEX));
-    println("");
-    println("context_stack");
-    println(itoa(context_stack,str,BASE_HEX));
-    println(itoa(sizeof(context_switch_stack),str,BASE_HEX));
-    println("");
-
-    println(itoa(run,str,BASE_HEX));
-    println(itoa(first_switch,str,BASE_HEX));
-    println(itoa((uint32_t)new->stack,str,BASE_HEX));
 
     
     int_set(int_level);
@@ -162,16 +144,6 @@ void switch_complete(thread* prev){
     //TODO if thread is dying kill it 
     if(prev->status==TS_DYING) thread_kill(prev);
 
-    // thread_dump(prev);
-    // thread_dump(current_thread());
-    /*
-    uint32_t *esp = (uint32_t*)get_esp();
-    esp+=1;
-    println("esp:");
-    print(itoa(esp,str,BASE_HEX));
-    println("addr:");
-    print(itoa(*esp,str,BASE_HEX));
-    */
 }
 
 void printval(uint32_t val){
@@ -185,20 +157,18 @@ void schedule(){
 
     if(curr->status==TS_RUNNING) PANIC("current process is still running");
 
-    print_attempt("switching from: ");
-    print(itoa((uint32_t)curr->stack,str,BASE_HEX));
-    print(" to ");
-    print(itoa((uint32_t)next->stack,str,BASE_HEX));
 
     if(curr!=next){
+        print_attempt("switching from: ");
+        print(itoa((uint32_t)curr->stack,str,BASE_HEX));
+        print(" to ");
+        print(itoa((uint32_t)next->stack,str,BASE_HEX));
         prev=context_switch(curr,next);
+        print_ok();
     }
-    print_ok();
-
-    //update new thread details
-    //TODO change PD if changing process owner 
 
     //schedule the old thread back into ready queue
+    //and update the new thread details 
     switch_complete(prev);
 
 }
@@ -216,8 +186,6 @@ thread* get_next_thread(){
 /* function run by idle thread */
 void idle(semaphore* idle_started){
     idle_thread=current_thread();
-    println("here");
-    thread_dump(current_thread());
     sema_up(idle_started);
     for(;;){
         /* Let someone else run. */
@@ -273,9 +241,7 @@ void thread_kill(thread* t){
 }
 
 static void run(thread_func* function, void* aux){
-    println("here");
     if(function==NULL) PANIC("NULL FUNCTION");
-
     int_enable();
     function(aux);
 

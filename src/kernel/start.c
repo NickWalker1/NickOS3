@@ -10,16 +10,11 @@ void main(){
 
     boot();
     
-
-    //println("esp");
-    //print(itoa(get_esp(),str,BASE_HEX));
-    //asm("int $3");
-    // int x=5/0;
-
     //Hold
     while(1);
 
 }
+
 /* Setups up kernel */
 void boot(){
     print_attempt("Clearing BSS.");
