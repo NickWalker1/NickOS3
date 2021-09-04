@@ -31,23 +31,12 @@ context_switch:
     pop  ebx
     pop  ebp
 
-    push esp
-    extern printval
-    call printval
-    add esp,4
-
     ret
 
 
 
 global first_switch
-first_switch:
-    push esp
-    extern printval
-    call printval
-    add esp,4    
-
-
+first_switch: 
     add esp, 8 ; get rid of switch thread arguments
 
 
@@ -57,15 +46,9 @@ first_switch:
     extern switch_complete 
     call switch_complete 
 
-    ;add esp,4   ; skip the push just done to be in line for the eip value
+    add esp,4   ; skip the push just done to be in line for the eip value
                 ; for ret
     
-    ;int 3
 
-    push esp
-    extern printval
-    call printval
-
-    hlt
     ;start thread properly
     ret

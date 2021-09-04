@@ -48,6 +48,7 @@ void thread_init(){
     int_enable();
     sema_down(&init_started);
 
+    println("FUCK YES");
 }
 
 /* allocates a page in kernel space for this thread and sets
@@ -104,6 +105,7 @@ thread* thread_create(char* name, int priority, thread_func* func, void* aux){
     println(itoa(context_stack,str,BASE_HEX));
     println(itoa(sizeof(context_switch_stack),str,BASE_HEX));
     println("");
+
     println(itoa(run,str,BASE_HEX));
     println(itoa(first_switch,str,BASE_HEX));
     println(itoa((uint32_t)new->stack,str,BASE_HEX));
@@ -173,7 +175,7 @@ void switch_complete(thread* prev){
 }
 
 void printval(uint32_t val){
-    println(itoa(val,str,BASE_HEX));
+    println(itoa(*(uint32_t*)(val+4),str,BASE_HEX));
 }
 
 void schedule(){
@@ -272,7 +274,6 @@ void thread_kill(thread* t){
 
 static void run(thread_func* function, void* aux){
     println("here");
-    halt();
     if(function==NULL) PANIC("NULL FUNCTION");
 
     int_enable();
