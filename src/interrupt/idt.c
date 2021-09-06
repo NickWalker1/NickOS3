@@ -71,13 +71,14 @@ void idt_init(){
     idt_set_descriptor(46, idt_int46, false); // Primary ATA Hard Disk
     idt_set_descriptor(47, idt_int47, false); // Secondary ATA Hard Disk
 
-    // Software interrupts
+    // Software interrupts (Syscall)
     idt_set_descriptor(50, idt_int50, true);
 
+    //Otherwise pic interrupt will be erronously recorded as a doublefault.
     irq_remap();
 
     __asm__ volatile("lidt %0" : : "memory"(idtr)); //load the new IDT
-    //__asm__ volatile("sti"); //Set interrupt flag
+    __asm__ volatile("sti"); //Set interrupt flag
 
 }
 

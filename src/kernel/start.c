@@ -10,6 +10,8 @@ void main(){
 
     boot();
     
+    thread_create("A",thread_echo,NULL);
+    thread_create("B",thread_echo,NULL);
     //Hold
     while(1);
 
@@ -43,17 +45,14 @@ void boot(){
 
     print_attempt("IDT init");
     idt_init();
-    int_enable();
     print_ok();
 
-    //int x=6/0;
-    // int_disable();
-    
     print_attempt("Threading init");
     thread_init();
     print_ok();
-    
-    
+
+    println("BOOT COMPLETE");
+
 }
 
 /*

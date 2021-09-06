@@ -124,7 +124,7 @@ typedef struct switch_entry_stack
 
 void thread_init();
 void thread_tick();
-thread* thread_create();
+thread* thread_create(char* name, thread_func* func, void* aux);
 thread* current_thread();
 void thread_block();
 void thread_unblock(thread* t);
@@ -134,7 +134,8 @@ static void run(thread_func* function, void* aux);
 void idle();
 void thread_yield();
 thread* get_next_thread();
-void thread_kill();
+void thread_kill(thread* t);
+ void thread_echo();
 
 //Helper functions
 static void* push_stack(thread* t, uint32_t size);

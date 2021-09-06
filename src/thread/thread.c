@@ -42,7 +42,7 @@ void thread_init(){
     println(itoa(get_esp(),str,BASE_HEX));
     semaphore init_started;
     sema_init(&init_started,0);
-    thread* tmp=thread_create("idle thread",5,idle,&init_started);
+    thread* tmp=thread_create("idle thread",idle,&init_started);
 
 
     int_enable();
@@ -56,7 +56,7 @@ void thread_init(){
 /* allocates a page in kernel space for this thread and sets
  * some basic info in thread struct and returns 
  */
-thread* thread_create(char* name, int priority, thread_func* func, void* aux){
+thread* thread_create(char* name, thread_func* func, void* aux){
     thread* new= (thread*) palloc_kern(1,F_ASSERT | F_KERN | F_ZERO |F_VERBOSE);
     new->id=create_id();
     new->magic=T_MAGIC;
@@ -117,15 +117,14 @@ void thread_tick(){
 void thread_yield(){
     thread* t = current_thread();
 
-    //if not idle thread, push to back of list when list implemented
-
 
     //TODO disable interrupts
     int int_level=int_disable();
     t->status=TS_READY;
 
-    //appending to ready threads
-    append(ready_threads,t);
+    //appending to ready threads if not idle thread
+    if(t!=idle_thread)
+        append(ready_threads,t);
 
     schedule();
     //renable intterupts to previous level
@@ -146,25 +145,29 @@ void switch_complete(thread* prev){
 
 }
 
-void printval(uint32_t val){
-    println(itoa(*(uint32_t*)(val+4),str,BASE_HEX));
-}
-
+/* must be called with interrupts off */
 void schedule(){
     thread* curr = current_thread();
     thread* next = get_next_thread();
     thread* prev = 0;
 
+    if(int_get_level()) PANIC("SCHEDULING WITH INTERRUPTS ENABLED");
     if(curr->status==TS_RUNNING) PANIC("current process is still running");
+
+    // println("curr:");
+    // print(itoa(curr->id,str,BASE_DEC));
+    // print(" next: ");
+    // print(itoa(next->id,str,BASE_DEC));
 
 
     if(curr!=next){
-        print_attempt("switching from: ");
+        println("switching from: ");
         print(itoa((uint32_t)curr->stack,str,BASE_HEX));
         print(" to ");
         print(itoa((uint32_t)next->stack,str,BASE_HEX));
+
         prev=context_switch(curr,next);
-        print_ok();
+        
     }
 
     //schedule the old thread back into ready queue
@@ -235,6 +238,8 @@ void thread_unblock(thread* t){
 }
 
 void thread_kill(thread* t){
+    println("KILLING THREAD: ");
+    print(itoa(t->id,str,BASE_DEC));
     remove(all_threads,t);
     remove(ready_threads,t);
     //TODO FREE PAGE
@@ -244,13 +249,28 @@ static void run(thread_func* function, void* aux){
     if(function==NULL) PANIC("NULL FUNCTION");
     int_enable();
     function(aux);
-
     thread* t= current_thread();
     t->status=TS_DYING;
-    
-    while(1); //wait to be killed :(
+
+    int_disable();
+    schedule();
 }
 
+
+ void thread_echo(){
+    while(1){
+        int a=0;
+        for(int i=0;i<100000000;i++) a = a+2;
+        list_dump(ready_threads);
+        println(itoa(current_thread(),str,BASE_HEX));
+        println(itoa(a,str,BASE_DEC));
+        asm("int $32");
+        asm("int $32");
+        asm("int $32");
+        asm("int $32");
+        asm("int $32");
+    }
+}
 
 //-----------------------HELPERS--------------------------------
 

@@ -5,7 +5,7 @@
 list* list_init(){
     list* new_list =(list*) malloc(sizeof(list));
     new_list->size=0;
-    new_list->head=new_list->tail=0;
+    new_list->head=new_list->tail=NULL;
     return new_list;
 }
 
@@ -67,4 +67,16 @@ bool remove(list* l, void* data){
     }
     return false;
 
+}
+
+void list_dump(list* l){
+    list_elem* elem=l->head;
+    println("[");
+    while(elem!=NULL){
+        print(itoa((uint32_t)elem->data,str,BASE_HEX));
+        if(elem->next==NULL)break;
+        print(",");
+        elem=elem->next;
+    }
+    print("]");
 }
