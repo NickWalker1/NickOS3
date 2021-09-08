@@ -10,8 +10,9 @@ void main(){
 
     boot();
     
-    thread_create("A",thread_echo,NULL);
-    thread_create("B",thread_echo,NULL);
+    // thread_create("A",thread_echo,NULL);
+    // thread_create("B",thread_echo,NULL);
+
     //Hold
     while(1);
 

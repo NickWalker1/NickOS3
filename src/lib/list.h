@@ -28,3 +28,4 @@ void* pop(list* l);
 int get_size(list* l);
 bool is_empty(list* l);
 void list_dump(list* l);
+void* list_get(list* l, uint32_t idx);

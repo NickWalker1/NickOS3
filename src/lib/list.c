@@ -43,10 +43,17 @@ void push(list* l, void* data){
 void append(list* l, void* data){
     list_elem* elem = (list_elem*) malloc(sizeof(list_elem));
     elem->data=data;
+    if(is_empty(l)) {
+        l->head=elem;
+        l->tail=elem;
+        elem->prev=NULL;
+        elem->next=NULL;
+        l->size++;
+        return;
+    }
     elem->prev=l->tail;
-    if(is_empty(l)) l->head=elem;
-    l->tail->next=elem;
     l->tail=elem;
+    elem->prev->next=elem;
     l->size++;
 }
 
@@ -60,9 +67,20 @@ bool remove(list* l, void* data){
         elem=elem->next;
     }
     if(elem->data==data){
-        elem->prev->next=elem->next;
-        elem->next->prev=elem->prev;
-        free(elem);
+        if(elem==l->head) {
+            l->head=elem->next;
+            l->head->prev=NULL;
+        }else{
+            elem->prev->next=elem->next;
+        }
+
+        if(elem==l->tail) {
+            l->tail=elem->prev;
+        }else{
+            elem->next->prev=elem->prev;
+        }
+        // free(elem);
+        l->size--;
         return true;
     }
     return false;
@@ -79,4 +97,12 @@ void list_dump(list* l){
         elem=elem->next;
     }
     print("]");
+}
+
+void* list_get(list* l, uint32_t idx){
+    if(idx>=l->size) PANIC("LIST OUT OF BOUNDS EXCEPTION");
+    list_elem* elem= l->head;
+    for(int i=0;i<idx;i++) elem=elem->next;
+    
+    return elem->data;
 }
