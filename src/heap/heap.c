@@ -15,6 +15,8 @@ void initialiseHeap(void* baseAddr, int length){
     firstFreeSegment->free=true;
 }
 
+/* currently just allocates all memory in kernel heap and user space will not 
+ * be implemented in this prototype */
 void* malloc(size_t size){
     //make it 8 byte aligned.
     int remainder = size%8;

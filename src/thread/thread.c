@@ -62,6 +62,7 @@ thread* thread_create(char* name, thread_func* func, void* aux){
     thread* new= (thread*) palloc_kern(1,F_ASSERT | F_KERN | F_ZERO |F_VERBOSE);
     new->id=create_id();
     new->magic=T_MAGIC;
+    //strcpy(new->name,name); //TODO wait for implementation
     new->page_directory=get_pd();
     new->pool=kernel_pool;
     new->priority=1;
