@@ -10,7 +10,10 @@ void main(){
 
     boot();
     
-    // thread_create("A",thread_echo,NULL);
+
+
+    thread* A=thread_create("A",thread_echo,NULL);
+    //thread_sleep(A,5,UNIT_SEC);
     // thread_create("B",thread_echo,NULL);
 
     //Hold

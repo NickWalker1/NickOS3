@@ -109,6 +109,15 @@ typedef struct switch_entry_stack
 
 */
 
+typedef struct sleeper{
+  thread* t;
+  uint32_t tick_remaining;
+  uint8_t flags;
+} sleeper;
+
+#define UNIT_TICK 0x1
+#define UNIT_SEC  0x2
+
 #define T_MAGIC 0x69696969
 
 #define MAX_THREADS 64
@@ -135,7 +144,8 @@ void idle();
 void thread_yield();
 thread* get_next_thread();
 void thread_kill(thread* t);
- void thread_echo();
+void thread_echo();
+void thread_sleep(thread* t, uint32_t ticks, uint8_t flags);
 
 //Helper functions
 static void* push_stack(thread* t, uint32_t size);

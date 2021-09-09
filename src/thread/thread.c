@@ -8,6 +8,7 @@ static thread* idle_thread; /* Just spins */
 //TODO  proper address space shit between threads
 static list*   all_threads;
 static list* ready_threads;
+static list* sleeper_list;
 
 
 static int tick_count;
@@ -37,6 +38,7 @@ void thread_init(){
 
     all_threads=list_init_with(kernel_thread);
     ready_threads=list_init();
+    sleeper_list=list_init();
 
 
     println(itoa(get_esp(),str,BASE_HEX));
@@ -108,6 +110,7 @@ thread* thread_create(char* name, thread_func* func, void* aux){
 void thread_tick(){
     //TODO get thread to do some analytics n shit
     time_tick();
+    // sleep_tick();
     /* preemption */
     if(++tick_count >= TIME_SLICE){
         thread_yield();
@@ -256,6 +259,46 @@ static void run(thread_func* function, void* aux){
     schedule();
 }
 
+void sleep_tick(){
+    int i;
+    for(i=0;i<sleeper_list->size;i++){
+        sleeper* s=list_get(sleeper_list,i);
+        s->tick_remaining--;
+        if(s->tick_remaining==0){
+            //free(s);
+            int level= int_disable();
+            remove(sleeper_list,s);
+            thread_unblock(s->t);
+            int_set(level);
+        }
+    }
+}
+
+void thread_sleep(thread* t, uint32_t ticks, uint8_t flags){
+    if(ticks==0) return;
+    if(!is_thread(t)) PANIC("ATTEMPTED TO SLEEP NON-THREAD");
+
+    sleeper* s= malloc(sizeof(sleeper));
+    s->t=t;
+    
+    if(flags&UNIT_TICK){
+        s->tick_remaining=ticks;
+    }
+    if(flags&UNIT_SEC){
+        s->tick_remaining=ticks*18; //TODO do proper checks for bit overflow
+    }
+    else{
+        //default to tick
+        s->tick_remaining=ticks;
+    }
+
+    int level=int_disable();
+    append(sleeper_list,s);
+    t->status=TS_BLOCKED;
+    remove(ready_threads,t);
+    int_set(level);
+
+}
 
  void thread_echo(){
     while(1){
