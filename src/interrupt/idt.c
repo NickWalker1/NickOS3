@@ -93,16 +93,16 @@ void idt_init(){
 *  47 */
 void irq_remap(void)
 {
-    outportb(0x20, 0x11);
-    outportb(0xA0, 0x11);
-    outportb(0x21, 0x20);
-    outportb(0xA1, 0x28);
-    outportb(0x21, 0x04);
-    outportb(0xA1, 0x02);
-    outportb(0x21, 0x01);
-    outportb(0xA1, 0x01);
-    outportb(0x21, 0x0);
-    outportb(0xA1, 0x0);
+    outportb(PIC1_COMMAND, 0x11);
+    outportb(PIC2_COMMAND, 0x11);
+    outportb(PIC1_DATA, 0x20);
+    outportb(PIC2_DATA, 0x28);
+    outportb(PIC1_DATA, 0x04);
+    outportb(PIC2_DATA, 0x02);
+    outportb(PIC1_DATA, 0x01);
+    outportb(PIC2_DATA, 0x01);
+    outportb(PIC1_DATA, 0x0);
+    outportb(PIC2_DATA, 0x0);
 }
 
 
@@ -140,17 +140,18 @@ void idt_global_int_wrapper(interrupt_state *state){
     // interrupt_state_dump(state);
     // halt();
     if(state->interrupt_number==32) thread_tick();
+    if(state->interrupt_number==33) keyboard_handler(state);
         /* If the IDT entry that was invoked was greater than 40
     *  (meaning IRQ8 - 15), then we need to send an EOI to
     *  the slave controller */
     if (state->interrupt_number >= 40)
     {
-        outportb(0xA0, 0x20);
+        outportb(PIC2_COMMAND, PIC_EOI);
     }
 
     /* In either case, we need to send an EOI to the master
     *  interrupt controller too */
-    outportb(0x20, 0x20);
+    outportb(PIC1_COMMAND, PIC_EOI);
 }
 
 void idt_global_exc_wrapper(exception_state *state){

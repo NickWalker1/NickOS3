@@ -43,7 +43,7 @@ void state_dump(exception_state *state){
 
     halt();
 }
-
+/*
 void interrupt_state_dump(interrupt_state* state){
     println("INTERRUPT CORE DUMP");
     println("INT_NUM:");
@@ -59,3 +59,4 @@ void interrupt_state_dump(interrupt_state* state){
     println("SS:");
     print(itoa(state->ss,str,BASE_HEX));
 }
+*/

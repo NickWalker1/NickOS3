@@ -2,10 +2,35 @@
 
 static exception_definition exceptions[];
 
+const char ASCIITable[] = {
+        0 ,  0 , '1', '2',
+    '3', '4', '5', '6',
+    '7', '8', '9', '0',
+    '-', '=',  0 ,  0 ,
+    'q', 'w', 'e', 'r',
+    't', 'y', 'u', 'i',
+    'o', 'p', '[', ']',
+        0 ,  0 , 'a', 's',
+    'd', 'f', 'g', 'h',
+    'j', 'k', 'l', ';',
+    '\'','`',  0 , '\\',
+    'z', 'x', 'c', 'v',
+    'b', 'n', 'm', ',',
+    '.', '/',  0 , '*',
+        0 , ' '
+    };
+
 void default_exception_handler(exception_state* state){
 
     PANIC_EXC(exceptions[state->interrupt_number].description,state);
 }
+
+void keyboard_handler(interrupt_state* state){
+    uint8_t scancode=inportb(0x60);
+    print_char_loc(ASCIITable[scancode],0,0,GREEN_ON_BLACK);
+
+}
+
 
 static exception_definition exceptions[] =
     {

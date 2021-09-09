@@ -12,6 +12,12 @@
 
 #define IDT_MAX_DESCRIPTORS 256
 
+#define PIC1_COMMAND 0x20
+#define PIC1_DATA 0x21
+#define PIC2_COMMAND 0xA0
+#define PIC2_DATA 0xA1
+#define PIC_EOI 0x20
+
 typedef struct idt_entry
 {
     uint16_t isr_low;				// The lower 16 bits of the ISR's address
