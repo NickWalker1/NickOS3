@@ -1,10 +1,10 @@
 BOOTLOADER_ENTRY equ 0x8000
+SECTORS equ 64
 
 ReadDisk:
-
     mov ah, 0x02
     mov bx, BOOTLOADER_ENTRY
-    mov al, 64
+    mov al, SECTORS
     mov dl, [BOOT_DISK]
     mov ch, 0x00
     mov dh, 0x00
@@ -12,6 +12,9 @@ ReadDisk:
 
     int 0x13
     jc DiskReadFail
+
+    cmp al, SECTORS
+    jne DiskReadFail
 
     ret
 

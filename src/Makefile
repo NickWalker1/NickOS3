@@ -13,7 +13,7 @@ GCC=i386-elf-gcc
 LD=i386-elf-ld
 
 run: all
-	qemu-system-x86_64 -fda os-image
+	qemu-system-i386 -fda os-image -D ./log.txt
 
 #concatenate the binaries together
 os-image: boot/mbr.bin kernel.bin

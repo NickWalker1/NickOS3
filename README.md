@@ -1,7 +1,7 @@
 # NickOS3
 32-bit basic OS
 
-Now with paging!
+Paging+Multi-threading+VFS.
 
 Physical Memory Locations:
 #idt_base           0x1000 //now just in kernel static memory
@@ -16,8 +16,3 @@ vga_text_base       0x000b8000
 kernel_base         0xC0000000
 kernel_page_dir     0xC0006000
 
-
-TODO:
-* sort out TSS
-* bug fix
-* clean up code
