@@ -12,14 +12,7 @@
  * (fix free)
  * (fix 0x1004 pagefault) 
  * rethink direntry, surely just point to fs_node again?
- *      - in that case can add base addr to fs_node
- * really stupid method currently used to read initrd
- *      - instead should update fs_node addr pointer
- *      - then can just use ram disk as if it was 
- *      - normal memory, but instead maybe extra checks 
- *      - because cannot write to it, unless I move to 
- *      - new memory space where it's free to grow?
- *      - move to user space???
+ * 
  */
 
 
@@ -81,15 +74,17 @@ bool is_rd_file(rd_file_header* f){
 }
 
 
-/* takes location which is found from the linker of where the ram disk
+/* Takes location which is found from the linker of where the ram disk
  * data starts at, and sets up the file system around it.
+ * TODO this filesystem can then be mounted onto the main fs
+ * as required.
  */
 fs_node* initialise_rd_fs(uint32_t location){
     initrd_header = (rd_header*) location;
 
     //setup root directory
     initrd_root = (fs_node*) malloc(sizeof(fs_node));
-    strcpy(initrd_root->name,"/");
+    strcpy(initrd_root->name,"rd");
     initrd_root->type=DIRECTORY;
     initrd_root->readdir=&initrd_readdir;
     initrd_root->readdir=&initrd_finddir;

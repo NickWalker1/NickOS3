@@ -43,10 +43,10 @@ struct fs_node{
 };
 
 typedef struct rd_file_header{
-    uint32_t magic
+    uint32_t magic;
     char name[128];
-    uint32_t addr;      /* offset inside the initrd file */
     uint32_t length;    /* size of actual data stored in the file */
+    uint8_t filetype;   /* integer in which each represents one filetype */
 }rd_file_header;
 
 struct direntry{
